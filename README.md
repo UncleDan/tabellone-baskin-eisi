@@ -10,10 +10,18 @@ Due schermate:
 Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, quindi funziona davvero offline.
 
 <p align="center">
-  <a href="./pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
+  <a href="pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
 </p>
 
-> Il codice dell'app si trova nella cartella **[`pwa/`](./pwa/)**.
+<p align="center"><a href="pwa/">▶ Apri l'app (pwa/)</a></p>
+
+> **Indirizzi una volta pubblicato** (GitHub Pages, "Deploy from a branch"):
+> - README (questa pagina): `https://<utente>.github.io/<repository>/`
+> - App / PWA: `https://<utente>.github.io/<repository>/pwa/`
+>
+> Il bottone qui sopra apre l'app **sul sito pubblicato**. Se invece stai leggendo questo README su github.com, il link mostra la cartella dei file (è normale). Il codice dell'app è in **[`pwa/`](pwa/)**.
+>
+> Perché il README faccia da homepage, **non** aggiungere il file `.nojekyll`.
 
 ---
 
@@ -21,7 +29,7 @@ Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, q
 
 **Schermata principale (modalità operativa)**
 - ▶️ avvia il tempo e diventa ⏸️; premendo ⏸️ il cronometro si ferma e torna ▶️ (anche con la barra spaziatrice).
-- A **fine tempo** (dopo la sirena automatica), accanto al play compare il pulsante **⏭ Periodo successivo**: con conferma avanza di un periodo (dopo il 4° parte `1TS`, `2TS`…) e riporta il cronometro al tempo pieno.
+- A **fine tempo** (dopo la sirena automatica), accanto al play compare il pulsante **⏭ Periodo successivo**: con conferma avanza di un periodo (dopo il 4° parte `1TS`, `2TS`…) e riporta il cronometro al tempo pieno. Alla fine del **4° quarto** e di ogni **supplementare** viene proposto **solo in caso di parità** (altrimenti la partita è finita).
 - ✏️ (matita) entra in modalità impostazioni/correzioni; `…` mostra la **versione** con il tasto **Verifica aggiornamenti**.
 - `+1` `+2` `+3` a sinistra aumentano il punteggio della **Squadra 1**, a destra quello della **Squadra 2**.
 - Tap sulla **pillola timeout**: accende un pallino in più; quando sono tutti accesi, il tocco successivo li azzera. Le due squadre sono indipendenti.
@@ -41,6 +49,7 @@ Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, q
 - **Sirena** e **fischietto** restano disponibili anche qui.
 
 **Impostazioni partita** (dal menu `…`)
+- **Conteggio falli** on/off, **Punti colore squadra** on/off (default punti verdi), **Audio**, **Schermo sempre acceso**.
 - Durata periodo, numero di periodi, **durata dei supplementari**.
 - **Timeout per tempo** (1°/2°) e **timeout per supplementare**.
 - Limite falli per il bonus e **bonus automatico negli ultimi 2′**.
@@ -123,4 +132,4 @@ baskin-tabellone/
 ---
 
 **Autore:** Daniele Lolli (UncleDan)
-**Versione:** 1.9.0
+**Versione:** 1.10.0

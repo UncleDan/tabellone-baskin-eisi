@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.9.0';
+const APP_VERSION = '1.10.0';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* ---------- Configurazione predefinita (modificabile da Impostazioni) ---------- */
@@ -18,6 +18,7 @@ const DEFAULT_CONFIG = {
   bonus: 5,              // falli oltre i quali scatta il bonus
   autoBonusLast2: true,  // bonus automatico negli ultimi 2' di Q4 e supplementari
   manualFouls: false,    // conteggio falli manuale (tasti +/-): default disattivato
+  scoreTeamColor: false, // punteggio nel colore della squadra (default: verde)
   resetFoulsEachPeriod: true,
   autoHorn: true
 };
@@ -162,13 +163,6 @@ function colonSVG(){
          `<circle class="dot" cx="15" cy="116" r="9"/></svg>`;
 }
 
-/* punto decimale: usato per i decimi di secondo nell'ultimo minuto.
-   Reso grande e ben visibile (un quadratino arrotondato in basso). */
-function dotSepSVG(){
-  return `<svg class="seg-colon seg-dot" viewBox="0 0 40 180" aria-hidden="true">`+
-         `<rect class="dot" x="6" y="140" width="28" height="28" rx="7"/></svg>`;
-}
-
 function renderNumber(el, value){
   const s = String(value);
   el.innerHTML = [...s].map(digitSVG).join('');
@@ -188,8 +182,9 @@ const elName  = [ $('#name1'), $('#name2') ];
 const bonusLeft = $('#bonusLeft');
 const bonusRight = $('#bonusRight');
 
-/* colori base selezionabili per la scritta del nome squadra */
-const TEAM_COLORS = ['#ffffff','#000000','#ffff00','#ff00ff','#00ffff','#ff8c00','#00e000','#9b30ff'];
+/* colori base selezionabili per la scritta del nome squadra
+   (bianco, nero, rosso, blu, giallo, viola, verde, azzurro) */
+const TEAM_COLORS = ['#ffffff','#000000','#ff2b2b','#2962ff','#ffe000','#9b30ff','#1ee63a','#29b6f6'];
 
 function luminance(hex){
   const c = String(hex||'#ffffff').replace('#','');
@@ -258,6 +253,24 @@ function applyTeamColors(){
       try{ cr.custom.value = /^#[0-9a-f]{6}$/i.test(col) ? col : '#ffffff'; }catch(e){}
     }
   }
+  applyScoreColors();
+}
+
+/* Punteggio nel colore della squadra (opzionale). Di default i punti restano
+   verdi; se attivo, ogni punteggio prende il colore della propria squadra,
+   con lieve alone bianco se il colore è troppo scuro. */
+function applyScoreColors(){
+  const on = state.config.scoreTeamColor;
+  for(let i=0;i<2;i++){
+    if(on){
+      const col = (state.colors && state.colors[i]) || '#ffffff';
+      elScore[i].style.color = col;
+      elScore[i].classList.toggle('outline-svg', luminance(col) < 0.25);
+    } else {
+      elScore[i].style.color = '';                 // torna al verde definito nel CSS
+      elScore[i].classList.remove('outline-svg');
+    }
+  }
 }
 
 /* =====================================================================
@@ -281,21 +294,27 @@ function renderTimer(){
     elTimer.classList.remove('tenths');
     elTimer.innerHTML = digitSVG(mm[0]) + digitSVG(mm[1]) + colonSVG() + digitSVG(ss[0]) + digitSVG(ss[1]);
   } else {
-    // ultimo minuto -> formato SS.d con i decimi
+    // ultimo minuto -> formato SS:d con i decimi (stessi due punti, tanto i minuti non ci sono)
     const ss = pad2(Math.floor(tenths / 10));
     const d  = String(tenths % 10);
     elTimer.classList.add('tenths');
-    elTimer.innerHTML = digitSVG(ss[0]) + digitSVG(ss[1]) + dotSepSVG() + digitSVG(d);
+    elTimer.innerHTML = digitSVG(ss[0]) + digitSVG(ss[1]) + colonSVG() + digitSVG(d);
   }
   updateNextButton();
 }
 
 /* Il pulsante "periodo successivo" compare accanto al play quando il tempo è
-   finito (es. dopo la sirena automatica) e l'orologio è fermo. */
+   finito (es. dopo la sirena automatica) e l'orologio è fermo.
+   Alla fine del 4° quarto e di ogni supplementare si propone SOLO in parità
+   (se non è pareggio la partita è finita). */
 function updateNextButton(){
   const atEnd = (state.remainingMs <= 0) && !state.running;
   const last = state.period >= (state.config.periods + 9);  // 9TS: non si avanza oltre
-  body.classList.toggle('end-of-period', atEnd && !last);
+  let allow = atEnd && !last;
+  if(allow && state.period >= state.config.periods){
+    allow = (state.scores[0] === state.scores[1]);          // 4° o supplementare: solo in parità
+  }
+  body.classList.toggle('end-of-period', allow);
 }
 
 function renderAll(){
@@ -423,6 +442,7 @@ function togglePlay(){
 function addPoints(team, pts){
   state.scores[team] = Math.max(0, state.scores[team] + pts);
   renderNumber(elScore[team], state.scores[team]);
+  updateNextButton();   // a fine 4°/supplementare il "successivo" dipende dalla parità
   saveState();
 }
 
@@ -444,7 +464,7 @@ function tapTimeout(team){
   saveState();
 }
 
-function applyPeriod(p){
+function applyPeriod(p, resetTime){
   const max = state.config.periods + 9;   // fino a 9 tempi supplementari (1TS..9TS)
   p = Math.max(1, Math.min(max, p));
   state.period = p;
@@ -453,8 +473,9 @@ function applyPeriod(p){
   const newPhase = phaseKey(p);
   if(newPhase !== state.toPhase){ state.timeoutsUsed = [0,0]; state.toPhase = newPhase; }
   if(state.config.resetFoulsEachPeriod){ state.fouls = [0,0]; }
-  // ricarica il tempo pieno del nuovo periodo (regolamentare o supplementare), se l'orologio e' fermo
-  if(!state.running){ state.remainingMs = periodFullMs(p); }
+  // il tempo si ricarica solo se richiesto esplicitamente (es. "periodo successivo"):
+  // cambiando manualmente il numero del periodo il tempo NON si azzera.
+  if(resetTime && !state.running){ state.remainingMs = periodFullMs(p); }
   renderAll();
   saveState();
   const label = (p > state.config.periods) ? `Supplementare ${p - state.config.periods}TS` : `Periodo ${p}`;
@@ -480,14 +501,12 @@ function newGame(){
 
 /* Reset della sola partita: azzera punteggi, falli, timeout, tempo e periodo,
    mantenendo impostazioni e nomi squadra. */
+/* Reset della partita: azzera punteggi, falli, timeout, tempo, periodo,
+   nomi e colori delle squadre; mantiene solo le impostazioni di gara. */
 function resetGame(){
   stopClock();
-  const names = (state.names || ['Squadra 1','Squadra 2']).slice();
-  const colors = (state.colors || ['#ffffff','#ffffff']).slice();
   const cfg = state.config;
   state = freshState(cfg);
-  state.names = names;
-  state.colors = colors;
   renderAll();
   saveState();
   toast('Partita azzerata');
@@ -910,11 +929,23 @@ function toggleManualFouls(){
   toast(state.config.manualFouls ? 'Conteggio falli attivato' : 'Conteggio falli disattivato');
 }
 
+function updateScoreColorLabel(){
+  const el = $('#scoreColorState'); if(el) el.textContent = state.config.scoreTeamColor ? 'on' : 'off';
+}
+function toggleScoreColor(){
+  state.config.scoreTeamColor = !state.config.scoreTeamColor;
+  updateScoreColorLabel();
+  applyScoreColors();
+  saveState();
+  toast(state.config.scoreTeamColor ? 'Punti nel colore squadra' : 'Punti verdi');
+}
+
 /* menu "..." (Informazioni + aggiornamenti) */
-onActivate($('#btnMore'), ()=>{ updateMuteLabel(); updateFoulLabel(); openSheet('moreBackdrop'); });
+onActivate($('#btnMore'), ()=>{ updateMuteLabel(); updateFoulLabel(); updateScoreColorLabel(); openSheet('moreBackdrop'); });
 onActivate($('#moreClose'), ()=> closeSheet('moreBackdrop'));
 onActivate($('#actCheckUpdate'), checkForUpdates);
 onActivate($('#actFouls'), toggleManualFouls);
+onActivate($('#actScoreColor'), toggleScoreColor);
 onActivate($('#actMute'), toggleMute);
 onActivate($('#actNewGame'), ()=>{ closeSheet('moreBackdrop'); if(confirm('Iniziare una nuova partita? Punteggi, falli e timeout verranno azzerati.')) newGame(); });
 onActivate($('#actSettings'), ()=>{ closeSheet('moreBackdrop'); openSettings(); });
@@ -952,7 +983,7 @@ onActivate($('#btnNext'), ()=>{
   if(tx) tx.textContent = `Si passa al ${nextPeriodLabel()} e il cronometro viene riportato al tempo pieno.`;
   openSheet('nextBackdrop');
 });
-onActivate($('#nextConfirm'), ()=>{ closeSheet('nextBackdrop'); applyPeriod(state.period + 1); });
+onActivate($('#nextConfirm'), ()=>{ closeSheet('nextBackdrop'); applyPeriod(state.period + 1, true); });
 onActivate($('#nextCancel'), ()=> closeSheet('nextBackdrop'));
 
 /* chiudi i fogli toccando lo sfondo */

@@ -146,7 +146,7 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
 }
 .team-name{
   font-weight: 800;
-  font-size: clamp(22px, 6vh, 64px);
+  font-size: clamp(33px, 9vh, 96px);
   line-height: 1.05;
   text-align: center;
   padding: .05em .4em;
@@ -158,21 +158,20 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
 
 /* display a 7 segmenti */
 .score{ color: var(--green); }
+/* alone bianco per punteggi con colore scuro (leggibilità su fondo nero) */
+.score.outline-svg{ filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff); }
 .score .seg-digit{ height: clamp(96px, 34vh, 340px); }
 .foul-num{ color: var(--yellow); }
 .foul-num .seg-digit{ height: clamp(40px, 12vh, 120px); }
 .timer{ color: var(--red); display:flex; align-items:center; }
-.timer .seg-digit{ height: clamp(51px, 13.5vh, 138px); }
+.timer .seg-digit{ height: clamp(76px, 20vh, 207px); }
 
 .score, .foul-num, .timer{ display:flex; align-items:center; justify-content:center; gap:.12em; }
 .seg-digit{ display:block; width:auto; }
 .seg-digit .seg{ fill: currentColor; }
 .seg-digit .seg.off{ opacity: var(--dimseg); }
-.seg-colon{ height: clamp(51px, 13.5vh, 138px); width:auto; color: var(--red); }
+.seg-colon{ height: clamp(76px, 20vh, 207px); width:auto; color: var(--red); }
 .seg-colon .dot{ fill: currentColor; }
-/* punto decimale dei decimi di secondo (ultimo minuto) */
-.seg-dot{ width:.5em; }
-.timer.tenths{ gap:.08em; }
 
 /* timeout */
 .timeouts{
@@ -285,7 +284,7 @@ body.mode-edit .team-name.editable{ outline: none; }
   display: none;
   font: inherit;
   font-weight: 800;
-  font-size: clamp(22px, 6vh, 64px);
+  font-size: clamp(33px, 9vh, 96px);
   text-align: center;
   background: transparent;
   color: var(--white);

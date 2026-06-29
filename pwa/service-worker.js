@@ -3,7 +3,7 @@
    Cache-first per il funzionamento completamente offline.
    Aggiornare CACHE_NAME ad ogni rilascio per forzare l'aggiornamento.
    ===================================================================== */
-const CACHE_NAME = 'baskin-tabellone-v1.9.0';
+const CACHE_NAME = 'baskin-tabellone-v1.10.0';
 
 const ASSETS = [
   './',
