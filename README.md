@@ -27,6 +27,7 @@ Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, q
 - Tocca il **tempo** (riquadro tratteggiato) per aprire i **rotori** minuti / secondi / decimi.
 - Tocca il **periodo** (riquadro tratteggiato) per aprire il **rotore** di selezione: `1` … `4`, poi `1TS` … `9TS` (tempi supplementari).
 - Tocca la **squadra 1** o la **squadra 2** (riquadri tratteggiati): compare la tastiera per modificare il **nome**.
+- In **basso a sinistra** il pulsante **Reset** (rosso) azzera la partita previa **conferma**: riporta a zero punteggi, falli, timeout, tempo e periodo, mantenendo impostazioni e nomi.
 - Usa i tasti `−1` `−2` `−3` ai lati per **abbassare il punteggio** (sinistra = Squadra 1, destra = Squadra 2).
 - Tocca i **pallini timeout** per correggerli (stesso comportamento della modalità operativa).
 - I falli mostrano i tasti `−` di correzione solo se il *Conteggio falli* è attivo (menu `…`); altrimenti il riquadro falli resta senza contatori.
@@ -39,7 +40,7 @@ Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, q
 - Azzeramento automatico dei falli a ogni periodo (on/off).
 - Sirena automatica a fine tempo (on/off).
 
-Lo stato (punteggi, falli, timeout, tempo, nomi, impostazioni) viene salvato in locale: ricaricando la pagina la partita non si perde.
+Lo stato (punteggi, falli, timeout, tempo, nomi, impostazioni) viene salvato in locale **ad ogni comando** e anche quando l'app va in background o viene chiusa: in caso di chiusura imprevista o crash, alla riapertura si riprende esattamente da dove eri (a orologio fermo, per sicurezza, così basta premere ▶️ per ripartire). Anche le opzioni — conteggio falli, audio, schermo sempre acceso — vengono ricordate.
 
 ---
 
@@ -110,4 +111,4 @@ baskin-tabellone/
 ---
 
 **Autore:** Daniele Lolli (UncleDan) — Formatic SRL
-**Versione:** 1.7.0
+**Versione:** 1.8.0

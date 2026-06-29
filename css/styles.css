@@ -256,6 +256,13 @@ body:not(.manual-fouls) .fouls-body{ display:none; }
   display: flex;
   gap: var(--gap);
 }
+.corner-actions.left{
+  right: auto;
+  left: clamp(10px, 2vw, 34px);
+}
+/* pulsante pericoloso (reset) */
+.icon-btn.danger circle{ fill:#ff5a5a; }
+.sheet-item.danger{ background:#d23b3b; color:#fff; }
 
 /* =====================================================================
    MODALITA' IMPOSTAZIONI: bordi tratteggiati sugli elementi modificabili
@@ -325,6 +332,7 @@ body.mode-edit .team-name-input{ display:block; }
 .sheet-item.secondary{ background:#2b2b2b; color:#fff; }
 .sheet-item:active{ filter:brightness(.9); }
 .sheet-close{ background:#2b2b2b; color:#fff; text-align:center; }
+.sheet-text{ margin:0; color:#cfcfcf; font-size:15px; line-height:1.4; }
 .sheet-row{ display:flex; gap:10px; flex-wrap:wrap; }
 .sheet-row > *{ flex:1 1 120px; }
 

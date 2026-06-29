@@ -143,7 +143,31 @@
       </button>
     </div>
 
+    <div class="corner-actions left only-edit">
+      <button class="icon-btn solid danger" id="btnReset" type="button" aria-label="Azzera la partita">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle cx="50" cy="50" r="46" fill="#fff"/>
+          <g fill="none" stroke="#000" stroke-width="9" stroke-linecap="round">
+            <path d="M74 34a30 30 0 1 0 7 22"/>
+          </g>
+          <path d="M78 22v18H60Z" fill="#000"/>
+        </svg>
+      </button>
+    </div>
+
   </main>
+
+  <!-- ============ CONFERMA RESET ============ -->
+  <div class="sheet-backdrop" id="resetBackdrop" hidden>
+    <div class="sheet" role="dialog" aria-label="Conferma reset">
+      <h2>Azzerare la partita?</h2>
+      <p class="sheet-text">Punteggi, falli, timeout, tempo e periodo torneranno a zero. Le impostazioni e i nomi delle squadre restano invariati.</p>
+      <div class="sheet-row">
+        <button class="sheet-item danger" id="resetConfirm" type="button">Sì, azzera</button>
+        <button class="sheet-close" id="resetCancel" type="button">Annulla</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ============ MENU "..." / INFORMAZIONI ============ -->
   <div class="sheet-backdrop" id="moreBackdrop" hidden>
@@ -151,7 +175,7 @@
       <h2>Informazioni</h2>
       <div class="about">
         <p class="about-title">Tabellone Baskin</p>
-        <p class="about-meta">Versione <span id="aboutVersion">1.7.0</span> — Daniele Lolli (UncleDan)</p>
+        <p class="about-meta">Versione <span id="aboutVersion">1.8.0</span> — Daniele Lolli (UncleDan)</p>
       </div>
       <button class="sheet-item" id="actCheckUpdate" type="button">Verifica aggiornamenti</button>
       <button class="sheet-item" id="actFouls" type="button">Conteggio falli: <span id="foulState">off</span></button>

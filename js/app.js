@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.7.0';
+const APP_VERSION = '1.8.0';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* ---------- Configurazione predefinita (modificabile da Impostazioni) ---------- */
@@ -90,8 +90,17 @@ function phaseKeyFor(s, period){
 let muted = false;
 try{ muted = localStorage.getItem(STORE_KEY+':muted') === '1'; }catch(e){}
 
+let wakeWantedInit = false;
+try{ wakeWantedInit = localStorage.getItem(STORE_KEY+':wake') === '1'; }catch(e){}
+
+/* Salvataggio dello stato completo (partita + opzioni) ad ogni comando.
+   Aggiunge un timestamp così, in caso di chiusura/crash, alla riapertura
+   si riprende esattamente da qui (a orologio fermo). */
 function saveState(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+  try{
+    state.savedAt = Date.now();
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  }catch(e){}
 }
 
 /* =====================================================================
@@ -296,6 +305,7 @@ function startClock(){
   tickBase = state.remainingMs;
   tickStart = performance.now();
   lastAutoBonus = autoBonusActive();
+  lastTickSave = performance.now();
   body.dataset.running = 'true';
   tickId = setInterval(onTick, 100);
   saveState();
@@ -313,6 +323,7 @@ function stopClock(){
 }
 
 let lastAutoBonus = false;
+let lastTickSave = 0;
 function onTick(){
   const rem = Math.max(0, tickBase - (performance.now() - tickStart));
   state.remainingMs = rem;
@@ -320,6 +331,9 @@ function onTick(){
   // aggiorna il bonus automatico in tempo reale (entrata negli ultimi 2')
   const ab = autoBonusActive();
   if(ab !== lastAutoBonus){ updateBonus(); lastAutoBonus = ab; }
+  // persistenza anti-crash: salva il tempo residuo ~ ogni secondo mentre scorre
+  const now = performance.now();
+  if(now - lastTickSave >= 1000){ saveState(); lastTickSave = now; }
   if(rem <= 0){
     stopClock();
     if(state.config.autoHorn) horn();
@@ -390,6 +404,19 @@ function newGame(){
   renderAll();
   saveState();
   toast('Nuova partita');
+}
+
+/* Reset della sola partita: azzera punteggi, falli, timeout, tempo e periodo,
+   mantenendo impostazioni e nomi squadra. */
+function resetGame(){
+  stopClock();
+  const names = (state.names || ['Squadra 1','Squadra 2']).slice();
+  const cfg = state.config;
+  state = freshState(cfg);
+  state.names = names;
+  renderAll();
+  saveState();
+  toast('Partita azzerata');
 }
 
 /* =====================================================================
@@ -648,9 +675,11 @@ function toast(msg){
 /* =====================================================================
    WAKE LOCK (schermo sempre acceso)
    ===================================================================== */
-let wakeLock = null, wakeWanted = false;
+let wakeLock = null, wakeWanted = wakeWantedInit;
+function persistWake(){ try{ localStorage.setItem(STORE_KEY+':wake', wakeWanted?'1':'0'); }catch(e){} }
 async function toggleWake(){
   wakeWanted = !wakeWanted;
+  persistWake();
   if(wakeWanted) await acquireWake(); else releaseWake();
   $('#wakeState').textContent = wakeWanted ? 'on' : 'off';
 }
@@ -660,12 +689,15 @@ async function acquireWake(){
       wakeLock = await navigator.wakeLock.request('screen');
       wakeLock.addEventListener('release', ()=>{});
     }
-  }catch(e){ toast('Schermo sempre acceso non disponibile'); wakeWanted=false; $('#wakeState').textContent='off'; }
+  }catch(e){ /* spesso richiede un gesto: si riproverà al primo tocco/visibilità */ }
 }
 function releaseWake(){ if(wakeLock){ wakeLock.release().catch(()=>{}); wakeLock = null; } }
 document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'hidden'){ saveState(); return; }   // salva quando si va in background
   if(wakeWanted && document.visibilityState === 'visible'){ acquireWake(); }
 });
+window.addEventListener('pagehide', saveState);
+window.addEventListener('beforeunload', saveState);
 
 /* =====================================================================
    INSTALL PROMPT
@@ -824,6 +856,11 @@ onActivate($('#timeClose'), ()=> closeSheet('timeBackdrop'));
 onActivate($('#periodApply'), applyPeriodEditor);
 onActivate($('#periodClose'), ()=> closeSheet('periodBackdrop'));
 
+/* reset partita (basso a sinistra, solo in impostazioni) con conferma */
+onActivate($('#btnReset'), ()=> openSheet('resetBackdrop'));
+onActivate($('#resetConfirm'), ()=>{ closeSheet('resetBackdrop'); resetGame(); });
+onActivate($('#resetCancel'), ()=> closeSheet('resetBackdrop'));
+
 /* chiudi i fogli toccando lo sfondo */
 document.querySelectorAll('.sheet-backdrop').forEach(bd=>{
   bd.addEventListener('click', (e)=>{ if(e.target === bd) bd.hidden = true; });
@@ -841,6 +878,12 @@ function isTyping(e){ const t=e.target; return t && (t.tagName==='INPUT'||t.tagN
    AVVIO
    ===================================================================== */
 renderAll();
+
+/* ripristina le preferenze salvate (schermo sempre acceso) */
+{
+  const ws = $('#wakeState'); if(ws) ws.textContent = wakeWanted ? 'on' : 'off';
+  if(wakeWanted) acquireWake();
+}
 
 /* service worker per il funzionamento offline */
 if('serviceWorker' in navigator){
