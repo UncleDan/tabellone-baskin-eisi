@@ -21,6 +21,7 @@ Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, q
 
 **Schermata principale (modalità operativa)**
 - ▶️ avvia il tempo e diventa ⏸️; premendo ⏸️ il cronometro si ferma e torna ▶️ (anche con la barra spaziatrice).
+- A **fine tempo** (dopo la sirena automatica), accanto al play compare il pulsante **⏭ Periodo successivo**: con conferma avanza di un periodo (dopo il 4° parte `1TS`, `2TS`…) e riporta il cronometro al tempo pieno.
 - ✏️ (matita) entra in modalità impostazioni/correzioni; `…` mostra la **versione** con il tasto **Verifica aggiornamenti**.
 - `+1` `+2` `+3` a sinistra aumentano il punteggio della **Squadra 1**, a destra quello della **Squadra 2**.
 - Tap sulla **pillola timeout**: accende un pallino in più; quando sono tutti accesi, il tocco successivo li azzera. Le due squadre sono indipendenti.
@@ -32,7 +33,7 @@ Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, q
 - Il tasto **✔️ (check)** salva le modifiche e torna alla modalità operativa.
 - Tocca il **tempo** (riquadro tratteggiato) per aprire i **rotori** minuti / secondi / decimi.
 - Tocca il **periodo** (riquadro tratteggiato) per aprire il **rotore** di selezione: `1` … `4`, poi `1TS` … `9TS` (tempi supplementari).
-- Tocca la **squadra 1** o la **squadra 2** (riquadri tratteggiati): compare la tastiera per modificare il **nome**.
+- Tocca la **squadra 1** o la **squadra 2** (riquadri tratteggiati): compare la tastiera per modificare il **nome**. Sotto al nome, una riga di **colori** (bianco, nero, giallo, magenta, ciano, arancione, verde, viola + colore personalizzato) imposta il colore della scritta; per i colori scuri viene aggiunta automaticamente una lieve **bordatura bianca** per la leggibilità.
 - In **basso a sinistra** il pulsante **Reset** (rosso) azzera la partita previa **conferma**: riporta a zero punteggi, falli, timeout, tempo e periodo, mantenendo impostazioni e nomi.
 - Usa i tasti `−1` `−2` `−3` ai lati per **abbassare il punteggio** (sinistra = Squadra 1, destra = Squadra 2).
 - Tocca i **pallini timeout** per correggerli (stesso comportamento della modalità operativa).
@@ -122,4 +123,4 @@ baskin-tabellone/
 ---
 
 **Autore:** Daniele Lolli (UncleDan)
-**Versione:** 1.8.1
+**Versione:** 1.9.0

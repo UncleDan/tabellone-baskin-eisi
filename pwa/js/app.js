@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.8.1';
+const APP_VERSION = '1.9.0';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* ---------- Configurazione predefinita (modificabile da Impostazioni) ---------- */
@@ -59,7 +59,8 @@ function freshState(cfg){
     fouls: [0, 0],
     timeoutsUsed: [0, 0],
     toPhase: 'h1',           // fase a cui si riferisce timeoutsUsed
-    names: ['Squadra 1', 'Squadra 2']
+    names: ['Squadra 1', 'Squadra 2'],
+    colors: ['#ffffff', '#ffffff']   // colore della scritta nome, per squadra
   };
 }
 
@@ -71,6 +72,7 @@ function loadState(){
       s.config = { ...DEFAULT_CONFIG, ...(s.config || {}) };
       s.running = false;            // non si riprende mai "in corsa"
       if(!Array.isArray(s.names)) s.names = ['Squadra 1','Squadra 2'];
+      if(!Array.isArray(s.colors)) s.colors = ['#ffffff','#ffffff'];
       if(!Array.isArray(s.timeoutsUsed)) s.timeoutsUsed = [0,0];
       if(typeof s.period !== 'number') s.period = 1;
       if(typeof s.toPhase !== 'string') s.toPhase = phaseKeyFor(s, s.period);
@@ -160,10 +162,11 @@ function colonSVG(){
          `<circle class="dot" cx="15" cy="116" r="9"/></svg>`;
 }
 
-/* punto decimale: usato per i decimi di secondo nell'ultimo minuto */
+/* punto decimale: usato per i decimi di secondo nell'ultimo minuto.
+   Reso grande e ben visibile (un quadratino arrotondato in basso). */
 function dotSepSVG(){
-  return `<svg class="seg-colon seg-dot" viewBox="0 0 30 180" aria-hidden="true">`+
-         `<circle class="dot" cx="15" cy="150" r="10"/></svg>`;
+  return `<svg class="seg-colon seg-dot" viewBox="0 0 40 180" aria-hidden="true">`+
+         `<rect class="dot" x="6" y="140" width="28" height="28" rx="7"/></svg>`;
 }
 
 function renderNumber(el, value){
@@ -185,8 +188,20 @@ const elName  = [ $('#name1'), $('#name2') ];
 const bonusLeft = $('#bonusLeft');
 const bonusRight = $('#bonusRight');
 
-/* campi nome modificabili + righe di correzione (iniettati) */
+/* colori base selezionabili per la scritta del nome squadra */
+const TEAM_COLORS = ['#ffffff','#000000','#ffff00','#ff00ff','#00ffff','#ff8c00','#00e000','#9b30ff'];
+
+function luminance(hex){
+  const c = String(hex||'#ffffff').replace('#','');
+  if(c.length < 6) return 1;
+  const r = parseInt(c.substr(0,2),16)/255, g = parseInt(c.substr(2,2),16)/255, b = parseInt(c.substr(4,2),16)/255;
+  const lin = x => (x <= 0.03928) ? x/12.92 : Math.pow((x+0.055)/1.055, 2.4);
+  return 0.2126*lin(r) + 0.7152*lin(g) + 0.0722*lin(b);
+}
+
+/* campi nome modificabili + selettore colore (iniettati) */
 const nameInputs = [];
+const colorRows = [];
 [0,1].forEach(i=>{
   const inp = document.createElement('input');
   inp.type = 'text';
@@ -196,7 +211,54 @@ const nameInputs = [];
   inp.addEventListener('input', ()=>{ state.names[i] = inp.value; saveState(); });
   inp.addEventListener('blur', ()=>{ if(!inp.value.trim()){ inp.value = `Squadra ${i+1}`; state.names[i]=inp.value; saveState(); } });
   nameInputs.push(inp);
+
+  // riga di scelta colore (visibile solo in modifica)
+  const row = document.createElement('div');
+  row.className = 'color-row only-edit';
+  TEAM_COLORS.forEach(col=>{
+    const sw = document.createElement('button');
+    sw.type = 'button';
+    sw.className = 'swatch';
+    sw.style.background = col;
+    sw.dataset.color = col.toLowerCase();
+    sw.setAttribute('aria-label', 'Colore ' + col);
+    sw.addEventListener('click', ()=> setTeamColor(i, col));
+    row.appendChild(sw);
+  });
+  const custom = document.createElement('input');
+  custom.type = 'color';
+  custom.className = 'swatch custom';
+  custom.setAttribute('aria-label', 'Colore personalizzato');
+  custom.addEventListener('input', ()=> setTeamColor(i, custom.value));
+  row.appendChild(custom);
+  inp.insertAdjacentElement('afterend', row);
+  colorRows.push({ row, custom });
 });
+
+function setTeamColor(team, col){
+  state.colors[team] = col;
+  applyTeamColors();
+  saveState();
+}
+
+function applyTeamColors(){
+  for(let i=0;i<2;i++){
+    const col = (state.colors && state.colors[i]) || '#ffffff';
+    const dark = luminance(col) < 0.25;
+    [elName[i], nameInputs[i]].forEach(el=>{
+      el.style.color = col;
+      el.classList.toggle('outline', dark);   // lieve bordatura bianca se troppo scuro
+    });
+    // evidenzia lo swatch selezionato e allinea il selettore personalizzato
+    const cr = colorRows[i];
+    if(cr){
+      cr.row.querySelectorAll('.swatch[data-color]').forEach(sw=>{
+        sw.classList.toggle('sel', sw.dataset.color === String(col).toLowerCase());
+      });
+      try{ cr.custom.value = /^#[0-9a-f]{6}$/i.test(col) ? col : '#ffffff'; }catch(e){}
+    }
+  }
+}
 
 /* =====================================================================
    RENDER COMPLETO
@@ -225,6 +287,15 @@ function renderTimer(){
     elTimer.classList.add('tenths');
     elTimer.innerHTML = digitSVG(ss[0]) + digitSVG(ss[1]) + dotSepSVG() + digitSVG(d);
   }
+  updateNextButton();
+}
+
+/* Il pulsante "periodo successivo" compare accanto al play quando il tempo è
+   finito (es. dopo la sirena automatica) e l'orologio è fermo. */
+function updateNextButton(){
+  const atEnd = (state.remainingMs <= 0) && !state.running;
+  const last = state.period >= (state.config.periods + 9);  // 9TS: non si avanza oltre
+  body.classList.toggle('end-of-period', atEnd && !last);
 }
 
 function renderAll(){
@@ -244,6 +315,7 @@ function renderAll(){
     nameInputs[i].value = state.names[i];
   }
   updateBonus();
+  applyTeamColors();
 
   body.dataset.running = state.running ? 'true' : 'false';
   body.dataset.muted = muted ? 'true' : 'false';
@@ -411,9 +483,11 @@ function newGame(){
 function resetGame(){
   stopClock();
   const names = (state.names || ['Squadra 1','Squadra 2']).slice();
+  const colors = (state.colors || ['#ffffff','#ffffff']).slice();
   const cfg = state.config;
   state = freshState(cfg);
   state.names = names;
+  state.colors = colors;
   renderAll();
   saveState();
   toast('Partita azzerata');
@@ -547,6 +621,13 @@ function buildRotor(el, values, initialIndex){
     el.appendChild(it);
   });
   setRotorIndex(el, initialIndex, false);
+  // ri-applica la posizione dopo il layout (il foglio può essere appena diventato visibile)
+  if(typeof requestAnimationFrame === 'function'){
+    requestAnimationFrame(()=>{
+      const i = parseInt(el.dataset.idx, 10) || 0;
+      el.scrollTop = i * ROTOR_ITEM_H;
+    });
+  }
   if(!el._wired){
     let t = null;
     el.addEventListener('scroll', ()=>{
@@ -585,10 +666,10 @@ function openTimeEditor(){
   const mm = Math.floor(tenths / 600);
   const ss = Math.floor((tenths % 600) / 10);
   const dd = tenths % 10;
-  buildRotor(rotorMin(),   rangeStr(0, 60), Math.min(60, mm));
+  openSheet('timeBackdrop');                 // prima rendo visibile il foglio…
+  buildRotor(rotorMin(),   rangeStr(0, 60), Math.min(60, mm));  // …poi posiziono i rotori
   buildRotor(rotorSec(),   rangeStr(0, 59), ss);
   buildRotor(rotorTenth(), rangeStr(0, 9),  dd);
-  openSheet('timeBackdrop');
 }
 function applyTimeEditor(){
   const mm = parseInt(rotorValue(rotorMin()), 10) || 0;
@@ -615,8 +696,8 @@ function periodValues(){
   return v;
 }
 function openPeriodEditor(){
-  buildRotor(rotorPeriod(), periodValues(), state.period - 1);
   openSheet('periodBackdrop');
+  buildRotor(rotorPeriod(), periodValues(), state.period - 1);
 }
 function applyPeriodEditor(){
   applyPeriod(rotorIndex(rotorPeriod()) + 1);
@@ -800,7 +881,7 @@ elTimer.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.p
   elName[i].addEventListener('click', focusName);
   team.addEventListener('click', (e)=>{
     // evita di rubare il focus quando si toccano i tasti -1/-2/-3, i timeout o il campo stesso
-    if(e.target.closest('.pts-btn') || e.target.closest('.timeouts') || e.target === nameInputs[i]) return;
+    if(e.target.closest('.pts-btn') || e.target.closest('.timeouts') || e.target.closest('.color-row') || e.target === nameInputs[i]) return;
     focusName();
   });
 });
@@ -860,6 +941,19 @@ onActivate($('#periodClose'), ()=> closeSheet('periodBackdrop'));
 onActivate($('#btnReset'), ()=> openSheet('resetBackdrop'));
 onActivate($('#resetConfirm'), ()=>{ closeSheet('resetBackdrop'); resetGame(); });
 onActivate($('#resetCancel'), ()=> closeSheet('resetBackdrop'));
+
+/* periodo successivo (accanto al play, a fine tempo) con conferma */
+function nextPeriodLabel(){
+  const p = state.period + 1;
+  return (p > state.config.periods) ? `${p - state.config.periods}° tempo supplementare (${p - state.config.periods}TS)` : `${p}° periodo`;
+}
+onActivate($('#btnNext'), ()=>{
+  const tx = $('#nextText');
+  if(tx) tx.textContent = `Si passa al ${nextPeriodLabel()} e il cronometro viene riportato al tempo pieno.`;
+  openSheet('nextBackdrop');
+});
+onActivate($('#nextConfirm'), ()=>{ closeSheet('nextBackdrop'); applyPeriod(state.period + 1); });
+onActivate($('#nextCancel'), ()=> closeSheet('nextBackdrop'));
 
 /* chiudi i fogli toccando lo sfondo */
 document.querySelectorAll('.sheet-backdrop').forEach(bd=>{

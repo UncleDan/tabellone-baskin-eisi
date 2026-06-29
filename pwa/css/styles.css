@@ -59,6 +59,11 @@ body.mode-edit .only-game{ display:none !important; }
 .topbar .timer{ grid-column: 3; justify-self: center; }
 .topbar .period{ justify-self: end; }
 
+/* gruppo play + periodo successivo (occupa una sola cella della griglia) */
+.clock-controls{ display:flex; align-items:center; gap: var(--gap); }
+#btnNext{ display:none; }
+body.mode-game.end-of-period #btnNext{ display:grid; }
+
 .icon-btn{
   flex: 0 0 auto;
   width: clamp(46px, 8.5vh, 96px);
@@ -157,17 +162,17 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
 .foul-num{ color: var(--yellow); }
 .foul-num .seg-digit{ height: clamp(40px, 12vh, 120px); }
 .timer{ color: var(--red); display:flex; align-items:center; }
-.timer .seg-digit{ height: clamp(34px, 9vh, 92px); }
+.timer .seg-digit{ height: clamp(51px, 13.5vh, 138px); }
 
 .score, .foul-num, .timer{ display:flex; align-items:center; justify-content:center; gap:.12em; }
 .seg-digit{ display:block; width:auto; }
 .seg-digit .seg{ fill: currentColor; }
 .seg-digit .seg.off{ opacity: var(--dimseg); }
-.seg-colon{ height: clamp(34px, 9vh, 92px); width:auto; color: var(--red); }
+.seg-colon{ height: clamp(51px, 13.5vh, 138px); width:auto; color: var(--red); }
 .seg-colon .dot{ fill: currentColor; }
 /* punto decimale dei decimi di secondo (ultimo minuto) */
-.seg-dot{ width:.34em; }
-.timer.tenths{ gap:.06em; }
+.seg-dot{ width:.5em; }
+.timer.tenths{ gap:.08em; }
 
 /* timeout */
 .timeouts{
@@ -292,6 +297,39 @@ body.mode-edit .team-name.editable{ outline: none; }
 }
 body.mode-edit .team-name{ display:none; }
 body.mode-edit .team-name-input{ display:block; }
+
+/* lieve bordatura bianca per colori scuri (leggibilità su fondo nero) */
+.team-name.outline, .team-name-input.outline{
+  text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff, 0 0 2px #fff;
+}
+
+/* selettore colore del nome (solo in modifica) */
+.color-row{
+  display: none;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: clamp(6px, 1.4vh, 12px);
+  margin-top: clamp(6px, 1.2vh, 14px);
+}
+body.mode-edit .color-row{ display: flex; }
+.swatch{
+  width: clamp(26px, 4.4vh, 40px);
+  height: clamp(26px, 4.4vh, 40px);
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,.45);
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.6) inset;
+}
+.swatch.sel{ border-color:#4ea1ff; box-shadow: 0 0 0 3px rgba(78,161,255,.5); }
+.swatch.custom{
+  background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+  position: relative;
+  -webkit-appearance: none; appearance: none;
+}
+.swatch.custom::-webkit-color-swatch-wrapper{ padding:0; }
+.swatch.custom::-webkit-color-swatch{ border:none; border-radius:50%; opacity:0; }
+.swatch.custom::-moz-color-swatch{ border:none; border-radius:50%; opacity:0; }
 
 
 /* =====================================================================

@@ -26,13 +26,21 @@
     <!-- ============ BARRA SUPERIORE ============ -->
     <header class="topbar">
 
-      <button class="icon-btn solid" id="btnPlay" type="button" aria-label="Avvia o ferma il tempo">
-        <svg viewBox="0 0 100 100" aria-hidden="true">
-          <circle cx="50" cy="50" r="46" fill="#fff"/>
-          <polygon class="ico-play" points="40,32 72,50 40,68" fill="#000"/>
-          <g class="ico-pause" fill="#000"><rect x="38" y="33" width="9" height="34" rx="2"/><rect x="53" y="33" width="9" height="34" rx="2"/></g>
-        </svg>
-      </button>
+      <div class="clock-controls">
+        <button class="icon-btn solid" id="btnPlay" type="button" aria-label="Avvia o ferma il tempo">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="46" fill="#fff"/>
+            <polygon class="ico-play" points="40,32 72,50 40,68" fill="#000"/>
+            <g class="ico-pause" fill="#000"><rect x="38" y="33" width="9" height="34" rx="2"/><rect x="53" y="33" width="9" height="34" rx="2"/></g>
+          </svg>
+        </button>
+        <button class="icon-btn solid" id="btnNext" type="button" aria-label="Periodo successivo">
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <circle cx="50" cy="50" r="46" fill="#fff"/>
+            <g fill="#000"><polygon points="33,31 61,50 33,69"/><rect x="63" y="31" width="9" height="38" rx="2"/></g>
+          </svg>
+        </button>
+      </div>
 
       <div class="timer editable" id="timer" role="button" tabindex="0" aria-label="Tempo di gioco"></div>
 
@@ -169,13 +177,25 @@
     </div>
   </div>
 
+  <!-- ============ CONFERMA PERIODO SUCCESSIVO ============ -->
+  <div class="sheet-backdrop" id="nextBackdrop" hidden>
+    <div class="sheet" role="dialog" aria-label="Conferma periodo successivo">
+      <h2 id="nextTitle">Passare al periodo successivo?</h2>
+      <p class="sheet-text" id="nextText">Il cronometro verrà riportato al tempo pieno del nuovo periodo.</p>
+      <div class="sheet-row">
+        <button class="sheet-item" id="nextConfirm" type="button">Sì, avanti</button>
+        <button class="sheet-close" id="nextCancel" type="button">Annulla</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ MENU "..." / INFORMAZIONI ============ -->
   <div class="sheet-backdrop" id="moreBackdrop" hidden>
     <div class="sheet" role="dialog" aria-label="Informazioni">
       <h2>Informazioni</h2>
       <div class="about">
         <p class="about-title">Tabellone Baskin</p>
-        <p class="about-meta">Versione <span id="aboutVersion">1.8.1</span> — Daniele Lolli (UncleDan)</p>
+        <p class="about-meta">Versione <span id="aboutVersion">1.9.0</span> — Daniele Lolli (UncleDan)</p>
       </div>
       <button class="sheet-item" id="actCheckUpdate" type="button">Verifica aggiornamenti</button>
       <button class="sheet-item" id="actFouls" type="button">Conteggio falli: <span id="foulState">off</span></button>
