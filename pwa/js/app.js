@@ -1,11 +1,11 @@
 /* =====================================================================
    Tabellone Baskin - logica applicativa
-   Autore: Daniele Lolli (UncleDan) - Formatic SRL
+   Autore: Daniele Lolli (UncleDan)
    PWA offline, due schermate: principale e impostazioni.
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.8.0';
+const APP_VERSION = '1.8.1';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* ---------- Configurazione predefinita (modificabile da Impostazioni) ---------- */

@@ -9,6 +9,12 @@ Due schermate:
 
 Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, quindi funziona davvero offline.
 
+<p align="center">
+  <a href="./pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
+</p>
+
+> Il codice dell'app si trova nella cartella **[`pwa/`](./pwa/)**.
+
 ---
 
 ## Funzioni
@@ -46,19 +52,20 @@ Lo stato (punteggi, falli, timeout, tempo, nomi, impostazioni) viene salvato in 
 
 ## Pubblicazione su GitHub Pages
 
-1. Crea un repository (es. `baskin-tabellone`) e carica **tutti i file di questa cartella** mantenendo la struttura.
+1. Crea un repository (es. `baskin-tabellone`) e carica **tutti i file mantenendo la struttura** (README e `.gitignore` nella root, l'app nella cartella `pwa/`).
 2. Vai su **Settings → Pages**.
 3. In *Build and deployment* scegli **Deploy from a branch**, branch `main`, cartella `/ (root)`, poi **Save**.
-4. Dopo qualche minuto l'app sarà su `https://<utente>.github.io/baskin-tabellone/`.
+4. Dopo qualche minuto l'app sarà su `https://<utente>.github.io/baskin-tabellone/pwa/`.
 5. Apri il link da smartphone/tablet e usa **"Aggiungi a schermata Home" / "Installa app"**: da quel momento funziona anche senza rete.
 
-> I percorsi sono tutti relativi, quindi l'app funziona sia nella root del dominio sia in una sottocartella del repository.
+> I percorsi sono tutti relativi, quindi l'app funziona dalla cartella `pwa/` (o da qualunque altra sottocartella) senza modifiche.
 
 ### Uso in locale
-Aprendo `index.html` con doppio clic (`file://`) l'app funziona, ma **il service worker e l'installazione PWA richiedono `http(s)`**. Per provarli in locale:
+Aprendo `pwa/index.html` con doppio clic (`file://`) l'app funziona, ma **il service worker e l'installazione PWA richiedono `http(s)`**. Per provarli in locale:
 
 ```bash
-# dalla cartella del progetto
+# dalla cartella pwa/
+cd pwa
 python3 -m http.server 8080
 # poi apri http://localhost:8080
 ```
@@ -69,27 +76,31 @@ python3 -m http.server 8080
 
 ```
 baskin-tabellone/
-├── index.html
-├── manifest.webmanifest
-├── service-worker.js
-├── css/styles.css
-├── js/app.js
-├── sounds/
-│   ├── horn.wav        (sirena - audio originale, CC0)
-│   └── whistle.wav     (fischietto - audio originale, CC0)
-└── icons/
-    ├── icon-192.png
-    ├── icon-512.png
-    └── icon-maskable-512.png
+├── README.md
+├── .gitignore
+└── pwa/
+    ├── index.html
+    ├── manifest.webmanifest
+    ├── service-worker.js
+    ├── css/styles.css
+    ├── js/app.js
+    ├── sounds/
+    │   ├── horn.wav        (sirena - audio originale, CC0)
+    │   ├── whistle.wav     (fischietto - audio originale, CC0)
+    │   └── CREDITS.txt
+    └── icons/
+        ├── icon-192.png
+        ├── icon-512.png
+        └── icon-maskable-512.png
 ```
 
 ---
 
 ## Personalizzazione rapida
 
-- **Colori**: variabili `--green`, `--red`, `--yellow` in `css/styles.css`.
-- **Valori predefiniti** (minuti, periodi, timeout, bonus): oggetto `DEFAULT_CONFIG` in `js/app.js`.
-- **Aggiornamenti offline**: a ogni rilascio incrementa `CACHE_NAME` in `service-worker.js` (e la versione in `app.js`/manifest) per forzare l'aggiornamento della cache sui dispositivi.
+- **Colori**: variabili `--green`, `--red`, `--yellow` in `pwa/css/styles.css`.
+- **Valori predefiniti** (minuti, periodi, timeout, bonus): oggetto `DEFAULT_CONFIG` in `pwa/js/app.js`.
+- **Aggiornamenti offline**: a ogni rilascio incrementa `CACHE_NAME` in `pwa/service-worker.js` (e la versione in `app.js`/manifest) per forzare l'aggiornamento della cache sui dispositivi.
 
 ---
 
@@ -110,5 +121,5 @@ baskin-tabellone/
 
 ---
 
-**Autore:** Daniele Lolli (UncleDan) — Formatic SRL
-**Versione:** 1.8.0
+**Autore:** Daniele Lolli (UncleDan)
+**Versione:** 1.8.1
