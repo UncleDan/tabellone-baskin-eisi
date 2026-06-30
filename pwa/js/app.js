@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.12.0';
+const APP_VERSION = '1.12.2';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* Repository del codice sorgente (modifica l'URL se cambi repo) */
@@ -991,6 +991,16 @@ onActivate($('#actScoreColor'), toggleScoreColor);
 onActivate($('#actMute'), toggleMute);
 onActivate($('#actNewGame'), ()=>{ closeSheet('moreBackdrop'); if(confirm('Iniziare una nuova partita? Punteggi, falli e timeout verranno azzerati.')) newGame(); });
 onActivate($('#actSettings'), ()=>{ closeSheet('moreBackdrop'); openSettings(); });
+
+/* chiudi l'applicazione (PWA): salva e prova a chiudere la finestra */
+onActivate($('#actQuit'), ()=>{
+  closeSheet('moreBackdrop');
+  if(!confirm('Chiudere l\'applicazione?')) return;
+  saveState();
+  try{ window.close(); }catch(e){}
+  // se il browser blocca la chiusura (es. scheda normale), avvisa
+  setTimeout(()=>{ toast('Per uscire chiudi la finestra o la scheda'); }, 300);
+});
 
 /* link al repository del codice (apre nel browser) */
 {

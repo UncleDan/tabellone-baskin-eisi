@@ -390,6 +390,10 @@ body.mode-edit .color-row{ display: flex; }
 a.sheet-link{ display:block; text-decoration:none; }
 .sheet-item{ background:#2a6df0; color:#fff; }
 .sheet-item.secondary{ background:#2b2b2b; color:#fff; }
+/* gruppi colore del menu "…" */
+.sheet-item.green{ background:#2e9e4f; color:#fff; }
+.sheet-item.amber{ background:#b07d12; color:#fff; }
+.sheet-item.darkred{ background:#8a2222; color:#fff; }
 .sheet-item:active{ filter:brightness(.9); }
 .sheet-close{ background:#2b2b2b; color:#fff; text-align:center; }
 .sheet-text{ margin:0; color:#cfcfcf; font-size:15px; line-height:1.4; }
@@ -462,4 +466,55 @@ a.sheet-link{ display:block; text-decoration:none; }
     position: absolute; inset: auto 8px 8px; text-align:center;
     color:#888; font-size:13px;
   }
+}
+
+/* =====================================================================
+   AVVISO ORIENTAMENTO: in verticale copre l'app e chiede di ruotare
+   ===================================================================== */
+#rotateNotice{ display: none; }
+
+@media (orientation: portrait){
+  #rotateNotice{
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;                 /* sopra fogli modali e toast */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(14px, 3vh, 26px);
+    background: #000;
+    color: #fff;
+    text-align: center;
+    padding: 24px;
+  }
+  /* nasconde il layout (pensato per landscape) per evitare che si "incasini" */
+  body > main,
+  .corner-actions{ visibility: hidden; }
+  body{ overflow: hidden; }
+}
+
+.rotate-ico{
+  width: clamp(110px, 38vw, 200px);
+  height: auto;
+  animation: rotateHint 2.4s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes rotateHint{
+  0%, 55%   { transform: rotate(0deg); }
+  75%, 100% { transform: rotate(-90deg); }
+}
+.rotate-title{
+  margin: 0;
+  font-weight: 800;
+  font-size: clamp(22px, 6vw, 34px);
+}
+.rotate-sub{
+  margin: 0;
+  font-weight: 600;
+  color: #bdbdbd;
+  font-size: clamp(14px, 4vw, 19px);
+}
+@media (prefers-reduced-motion: reduce){
+  .rotate-ico{ animation: none; }
 }
