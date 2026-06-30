@@ -119,7 +119,7 @@ baskin-tabellone/
 - **Tempi** → quarti da **8 minuti**, **4 periodi**, tempi supplementari da **4 minuti** (siglati da `1TS` a `9TS`).
 - **Decimi di secondo** → negli ultimi **60 secondi** di ogni periodo o supplementare il cronometro passa al formato `SS:d` (regolamento FIBA), con gli stessi due punti dei minuti.
 - **Bonus automatico** → **dopo** che scocca il **2:00** del **4° quarto** e di **ogni supplementare** il bonus scatta per entrambe le squadre **senza conteggio falli** (a 2:00.0 esatti ancora niente bonus; entrambe le frecce si accendono e lampeggiano). Disattivabile da Impostazioni.
-- **Timeout** → **1° quarto: 1** (chiamandone uno il secondo si blocca); **2° quarto:** entrambi se non hai usato quello del 1°, altrimenti solo il secondo (monte di **2** condiviso nei quarti 1‑2). I quarti 3‑4 funzionano come 1‑2; ogni **supplementare** ha **1** timeout. Un tap quando non ci sono timeout disponibili viene segnalato con **fischio** e avviso *"Timeout non disponibile"*. La correzione/azzeramento si fa nella schermata **Impostazioni**.
+- **Timeout** → in operativa si assegnano **solo a cronometro fermo** (a crono in movimento un tap mostra *"Cronometro in movimento"*, senza fischio). **1° quarto: 1** (chiamandone uno il secondo si blocca); **2° quarto:** entrambi se non hai usato quello del 1°, altrimenti solo il secondo (monte di **2** condiviso nei quarti 1‑2). I quarti 3‑4 funzionano come 1‑2; ogni **supplementare** ha **1** timeout. Un tap quando non ci sono timeout disponibili viene segnalato con **fischio** e avviso *"Timeout non disponibile"*. La correzione/azzeramento si fa nella schermata **Impostazioni**.
 - **Periodo** → mostrato con cifra a **LED bianca** (alta il 75% del cronometro) e due spie: **°** (quarti ordinari) o **TS** (supplementari); se ne accende una sola.
 - **Suoni** → sirena e fischietto sono file audio originali (sintetizzati, rilasciati come **CC0**) inclusi in `sounds/`; la sirena suona **automaticamente a fine quarto** oltre che con il pulsante. Se i file non fossero disponibili, un sintetizzatore WebAudio fa da riserva.
 
@@ -133,4 +133,4 @@ baskin-tabellone/
 ---
 
 **Autore:** Daniele Lolli (UncleDan)
-**Versione:** 1.11.0
+**Versione:** 1.11.1

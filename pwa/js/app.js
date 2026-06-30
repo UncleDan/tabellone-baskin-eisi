@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.11.0';
+const APP_VERSION = '1.11.1';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* ---------- Configurazione predefinita (modificabile da Impostazioni) ---------- */
@@ -483,7 +483,12 @@ function tapTimeout(team){
     if(n > pool) n = 0;
     state.timeoutsUsed[team] = n;
   } else {
-    // in OPERATIVA: assegna solo se disponibile, altrimenti fischio + popup
+    // in OPERATIVA: il timeout si assegna solo a cronometro fermo
+    if(state.running){
+      toast('Cronometro in movimento');   // niente fischio
+      return;
+    }
+    // assegna solo se disponibile, altrimenti fischio + popup
     const cap = timeoutCap(state.period);
     if(state.timeoutsUsed[team] < cap){
       state.timeoutsUsed[team] += 1;
