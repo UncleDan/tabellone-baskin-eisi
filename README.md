@@ -10,18 +10,8 @@ Due schermate:
 Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, quindi funziona davvero offline.
 
 <p align="center">
-  <a href="pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
+  <a href="https://www.uncledan.it/tabellone-baskin/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
 </p>
-
-<p align="center"><a href="pwa/">▶ Apri l'app (pwa/)</a></p>
-
-> **Indirizzi una volta pubblicato** (GitHub Pages, "Deploy from a branch"):
-> - README (questa pagina): `https://<utente>.github.io/<repository>/`
-> - App / PWA: `https://<utente>.github.io/<repository>/pwa/`
->
-> Il bottone qui sopra apre l'app **sul sito pubblicato**. Se invece stai leggendo questo README su github.com, il link mostra la cartella dei file (è normale). Il codice dell'app è in **[`pwa/`](pwa/)**.
->
-> Perché il README faccia da homepage, **non** aggiungere il file `.nojekyll`.
 
 ---
 
