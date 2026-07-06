@@ -1,5 +1,15 @@
 # Tabellone Baskin
 
+## Cos'è il Baskin
+
+Il Baskin è uno sport inclusivo per progettazione, nato in Italia nei primi anni duemila, che prevede per regolamento la partecipazione di atleti di entrambi i sessi con e senza disabilità. Il regolamento del Baskin è una proprieta intellettuale di *Associazione Baskin* ed i campionati in Italia sono organizzati da *EISI - Ente Italiano Sport Inclusivi*, Ente di Promozione Paralimpica riconosciuto dal *Comitato Italiano Paralimpico*.
+
+Per approfondire: [baskin.it](https://baskin.it) · [eisi.it](https://eisi.it)
+
+---
+
+## La PWA
+
 PWA segnapunti per il **Baskin**, installabile e **utilizzabile completamente offline**, pensata per essere ospitata su **GitHub Pages**.
 
 Due schermate:
@@ -12,6 +22,19 @@ Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, q
 <p align="center">
   <a href="https://www.uncledan.it/tabellone-baskin/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
 </p>
+
+---
+
+## Progetti collegati
+
+Il Tabellone Baskin esiste in **due repository**, che lavorano insieme:
+
+- **PWA (web)** — repo **[`baskin-tabellone`](https://github.com/UncleDan/baskin-tabellone)** *(questo)*:
+  il segnapunti web di questa pagina, installabile e offline.
+- **App Android (Cast)** — repo **[`baskin-tabellone-cast`](https://github.com/UncleDan/baskin-tabellone-cast)** *(work in progress)*:
+  incorpora questa stessa PWA e aggiunge la presentazione su TV (display
+  secondario HDMI/Miracast o LAN). Questa PWA, in modalità `?display=1`, fa anche
+  da **schermo via browser** per quell'app.
 
 ---
 
@@ -111,6 +134,28 @@ baskin-tabellone/
 
 ---
 
+## Modalità sola visualizzazione (`?display=1`)
+
+Aprendo la PWA con il parametro `?display=1` (es. `…/tabellone-baskin/?display=1`) si
+attiva la **modalità display**: il tabellone viene mostrato **senza alcun comando**
+(niente play, modifica, menu, pulsanti punti/falli, sirena/fischietto), in sola
+lettura, adatta a un secondo schermo o a un TV.
+
+- In questa modalità l'app **non modifica né salva** la partita: è un puro
+  visualizzatore.
+- Lo stato arriva dall'esterno: se la pagina è servita da un web server con
+  endpoint `GET /state` (come nell'app *Tabellone Baskin Cast*), il display fa
+  **polling** ogni ~0,75 s; il cronometro scorre comunque fluido perché il tempo
+  viene fatto avanzare in locale tra un aggiornamento e l'altro.
+- È disponibile anche `window.applyDisplayState(json)` per aggiornare il display
+  con un push diretto (usato dal wrapper Android tramite un display secondario).
+
+Questa modalità è la base dell'app **[Tabellone Baskin Cast](https://github.com/UncleDan/baskin-tabellone-cast)**
+(progetto Android separato, **work in progress**) che presenta il tabellone su un
+TV via **display secondario (HDMI/Miracast)** o via **LAN** (browser del TV).
+
+---
+
 ## Streaming BaskinCam (opzionale)
 
 La PWA può inviare automaticamente lo stato partita a un dispositivo companion
@@ -127,13 +172,60 @@ l'indirizzo del dispositivo nel formato `IP:porta` (es. `192.168.1.50:8080`).
 - Il cronometro che scorre **non** genera traffico continuo: il ricevente ricava il
   tempo da `running` + `remainingMs` dell'ultimo messaggio.
 
-Corpo JSON inviato (esempio in Basket FIBA, 2° quarto, cronometro in corsa,
-squadra 1 in bonus):
+Corpo JSON inviato (esempio in **Baskin**, 4° quarto a **1'47"** dalla fine,
+cronometro in corsa, bonus attivo per entrambe le squadre):
 
 ```json
 {
-  "period": 2,
-  "remainingMs": 372400,
+  "period": 4,
+  "remainingMs": 107000,
+  "running": true,
+  "scores": [37, 33],
+  "fouls": [0, 0],
+  "timeoutsUsed": [1, 2],
+  "bonusActive": [true, true],
+  "possession": [false, false],
+  "names": ["Leoni Rossi", "Aquile Blu"],
+  "colors": ["#ff2b2b", "#1e6ee6"],
+  "config": {
+    "periodsRegular": 4,
+    "timeoutMode": "baskin",
+    "timeoutsPerHalf": 2,
+    "timeoutsOvertime": 1,
+    "bonusMode": "last2",
+    "bonus": 5,
+    "manualFouls": false,
+    "possession": false,
+    "scoreTeamColor": false
+  }
+}
+```
+
+Come leggerlo lato BaskinCam:
+
+- Array `[squadra1, squadra2]` (sinistra, destra) per `scores`, `fouls`,
+  `timeoutsUsed`, `bonusActive`, `possession`.
+- `period` 1..`config.periodsRegular` = quarti; oltre = supplementari (es. con
+  `periodsRegular:4`, `period:5` = 1° supplementare).
+- `remainingMs` + `running`: con `running:true` il ricevente fa scorrere il tempo
+  da solo partendo da `remainingMs` (la PWA **non** invia ad ogni decimo).
+- `bonusActive` è già calcolato dalla PWA: in **Baskin** (`bonusMode:"last2"`)
+  scatta per entrambe le squadre negli ultimi 2' di 4° quarto/supplementari,
+  senza dipendere dai falli (qui infatti `fouls` è `[0,0]` con `manualFouls:false`);
+  in **Basket FIBA** (`bonusMode:"teamFouls"`) è invece per-squadra in base ai
+  falli. Il ricevente può usare `bonusActive` così com'è.
+- `config.timeoutMode` (`baskin`/`fiba`) e `bonusMode` (`last2`/`teamFouls`/`off`)
+  indicano come rendere timeout e bonus; `manualFouls`, `possession`,
+  `scoreTeamColor` riflettono le opzioni attive.
+
+Stesso momento di partita — **4° quarto a 1'47" dalla fine**, cronometro in
+corsa — ma in **Basket FIBA** (squadra 1 in bonus per aver raggiunto i falli di
+squadra, non per il tempo residuo):
+
+```json
+{
+  "period": 4,
+  "remainingMs": 107000,
   "running": true,
   "scores": [42, 38],
   "fouls": [4, 2],
@@ -156,19 +248,23 @@ squadra 1 in bonus):
 }
 ```
 
-Come leggerlo lato BaskinCam:
+Gli **switch che cambiano** tra i due esempi (a parità di struttura del
+payload) sono tutti dentro `config`, coerenti con il preset di disciplina:
 
-- Array `[squadra1, squadra2]` (sinistra, destra) per `scores`, `fouls`,
-  `timeoutsUsed`, `bonusActive`, `possession`.
-- `period` 1..`config.periodsRegular` = quarti; oltre = supplementari (es. con
-  `periodsRegular:4`, `period:5` = 1° supplementare).
-- `remainingMs` + `running`: con `running:true` il ricevente fa scorrere il tempo
-  da solo partendo da `remainingMs` (la PWA **non** invia ad ogni decimo).
-- `bonusActive` è già calcolato dalla PWA (per la logica Baskin/last2 o
-  Basket/teamFouls, secondo `config.bonusMode`); il ricevente può usarlo così com'è.
-- `config.timeoutMode` (`baskin`/`fiba`) e `bonusMode` (`last2`/`teamFouls`/`off`)
-  indicano come rendere timeout e bonus; `manualFouls`, `possession`,
-  `scoreTeamColor` riflettono le opzioni attive.
+| Campo             | Baskin       | Basket FIBA    |
+|-------------------|--------------|----------------|
+| `timeoutMode`     | `"baskin"`   | `"fiba"`       |
+| `bonusMode`        | `"last2"`    | `"teamFouls"`  |
+| `bonus`            | `5`          | `4`            |
+| `manualFouls`      | `false`      | `true`         |
+| `possession`       | `false`      | `true`         |
+
+Di conseguenza cambia anche il **significato** dei campi fuori da `config`:
+- `fouls` è `[0,0]` nell'esempio Baskin perché lì il conteggio falli è
+  disattivato (`manualFouls:false`); in FIBA invece è attivo e alimenta
+  `bonusActive` tramite `bonusMode:"teamFouls"`.
+- `possession` è sempre presente nell'array, ma ha senso operativo solo se
+  `config.possession` è `true` (FIBA); in Baskin resta `[false,false]`.
 
 ---
 
@@ -193,4 +289,4 @@ Dal menu **…** dell'app è disponibile il link diretto al **repository GitHub*
 ---
 
 **Autore:** Daniele Lolli (UncleDan)  
-**Versione:** 1.14.1
+**Versione:** 1.15.2

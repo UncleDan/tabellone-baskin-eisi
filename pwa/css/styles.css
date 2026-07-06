@@ -557,3 +557,38 @@ a.sheet-link{ display:block; text-decoration:none; }
 @media (prefers-reduced-motion: reduce){
   .rotate-ico{ animation: none; }
 }
+
+/* =====================================================================
+   MODALITÀ SOLA VISUALIZZAZIONE (?display=1)
+   Mostra il tabellone come sul display/TV, senza alcun comando.
+   Si mantiene il layout del tabellone: i comandi diventano invisibili
+   (visibility) così punteggi, tempo, periodo restano nella stessa posizione.
+   ===================================================================== */
+body.display-only .clock-controls,
+body.display-only .topbar-actions,
+body.display-only .corner-actions,
+body.display-only .pts-btn,
+body.display-only .foul-btn{
+  visibility: hidden !important;
+}
+body.display-only #btnNext{ display: none !important; }
+
+/* elementi che restano visibili ma non interattivi */
+body.display-only #timer,
+body.display-only #period,
+body.display-only #name1,
+body.display-only #name2,
+body.display-only .timeouts,
+body.display-only #possLeft,
+body.display-only #possRight{
+  pointer-events: none !important;
+  cursor: default !important;
+}
+/* niente affordance di modifica (bordo tratteggiato) sul display */
+body.display-only .editable{ border-color: transparent !important; }
+/* i nomi sono di sola lettura */
+body.display-only #name1,
+body.display-only #name2{
+  -webkit-user-select: none; user-select: none;
+  background: transparent !important;
+}

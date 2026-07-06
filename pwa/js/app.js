@@ -5,8 +5,14 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.14.1';
+const APP_VERSION = '1.15.2';
 const STORE_KEY = 'baskin-tabellone-v1';
+
+/* Modalità "sola visualizzazione": attivata con ?display=1 nell'URL.
+   Nasconde tutti i comandi e riceve lo stato dal controller (via SSE quando
+   servito da un web server, o via window.applyDisplayState dal wrapper Cast).
+   In questa modalità l'app NON persiste nulla e NON pubblica stato. */
+const DISPLAY_MODE = (()=>{ try{ return new URLSearchParams(location.search).get('display') === '1'; }catch(_){ return false; } })();
 
 /* Repository del codice sorgente (modifica l'URL se cambi repo) */
 const REPO_URL = 'https://github.com/UncleDan/baskin-tabellone';
@@ -148,28 +154,27 @@ try{ wakeWantedInit = localStorage.getItem(STORE_KEY+':wake') === '1'; }catch(e)
    Aggiunge un timestamp così, in caso di chiusura/crash, alla riapertura
    si riprende esattamente da qui (a orologio fermo). */
 function saveState(fromTick){
+  // in sola visualizzazione l'app non persiste né pubblica: è un consumatore
+  if(DISPLAY_MODE) return;
   try{
     state.savedAt = Date.now();
     localStorage.setItem(STORE_KEY, JSON.stringify(state));
   }catch(e){}
-  // invio allo streaming BaskinCam: solo sulle interazioni utente, NON sul tick
-  // del cronometro (che è già throttlato ~1s); il ricevente ricava il tempo che
-  // scorre da running + remainingMs.
-  if(!fromTick) inviaStatoBaskinCam();
+  const payload = costruisciPayloadStato();
+  // wrapper "Cast": push locale al display secondario / web server integrato
+  // (a ogni salvataggio, anche sul tick, così il display resta sincronizzato)
+  if(window.CastBridge && typeof window.CastBridge.pushState === 'function'){
+    try{ window.CastBridge.pushState(JSON.stringify(payload)); }catch(_){}
+  }
+  // streaming BaskinCam: solo sulle interazioni utente, NON sul tick (rete)
+  if(!fromTick) inviaStatoBaskinCam(payload);
 }
 
-/* =====================================================================
-   STREAMING BASKINCAM (opzionale, "fire and forget")
-   Invia lo stato partita a un dispositivo companion sulla rete locale
-   (overlay tabellone in streaming). Non deve MAI bloccare o rallentare
-   l'uso del tabellone: timeout breve, errori ignorati, nessun retry.
-   ===================================================================== */
-function inviaStatoBaskinCam(){
+/* Costruisce il payload dello stato partita (usato da BaskinCam, dal wrapper
+   Cast e dal server LAN per la modalità sola visualizzazione). */
+function costruisciPayloadStato(){
   const cfg = state.config;
-  // no-op immediato se disattivato o senza destinazione
-  if(!cfg.baskinCamEnabled || !cfg.baskinCamHost) return;
-
-  const payload = {
+  return {
     period: state.period,
     remainingMs: state.remainingMs,
     running: state.running,
@@ -192,6 +197,19 @@ function inviaStatoBaskinCam(){
       scoreTeamColor: cfg.scoreTeamColor
     }
   };
+}
+
+/* =====================================================================
+   STREAMING BASKINCAM (opzionale, "fire and forget")
+   Invia lo stato partita a un dispositivo companion sulla rete locale
+   (overlay tabellone in streaming). Non deve MAI bloccare o rallentare
+   l'uso del tabellone: timeout breve, errori ignorati, nessun retry.
+   ===================================================================== */
+function inviaStatoBaskinCam(payload){
+  const cfg = state.config;
+  // no-op immediato se disattivato o senza destinazione
+  if(!cfg.baskinCamEnabled || !cfg.baskinCamHost) return;
+  if(!payload) payload = costruisciPayloadStato();
 
   // invio "fire and forget": timeout breve, errori ignorati, nessun retry
   const controller = new AbortController();
@@ -202,6 +220,80 @@ function inviaStatoBaskinCam(){
     body: JSON.stringify(payload),
     signal: controller.signal
   }).catch(() => {}).finally(() => clearTimeout(timer));
+}
+
+/* =====================================================================
+   MODALITÀ SOLA VISUALIZZAZIONE (display secondario / browser TV)
+   Riceve lo stato (via SSE o window.applyDisplayState) e mostra il
+   tabellone in sola lettura; il cronometro scorre in locale tra un
+   aggiornamento e l'altro usando running + remainingMs.
+   ===================================================================== */
+let dispTickId = null, dispBase = 0, dispStart = 0;
+function displayStartClock(){
+  displayStopClock();
+  dispBase = state.remainingMs;
+  dispStart = performance.now();
+  body.dataset.running = 'true';
+  dispTickId = setInterval(()=>{
+    state.remainingMs = Math.max(0, dispBase - (performance.now() - dispStart));
+    renderTimer();
+    updateBonus();                       // bonus "ultimi 2'" dipende dal tempo
+    if(state.remainingMs <= 0){ displayStopClock(); }
+  }, 100);
+}
+function displayStopClock(){
+  if(dispTickId){ clearInterval(dispTickId); dispTickId = null; }
+  body.dataset.running = state.running ? 'true' : 'false';
+  renderTimer();
+}
+/* Applica uno snapshot di stato ricevuto dal controller. */
+function applyDisplayState(data){
+  try{ if(typeof data === 'string') data = JSON.parse(data); }catch(_){ return; }
+  if(!data || typeof data !== 'object') return;
+  if(Array.isArray(data.scores))       state.scores = data.scores;
+  if(Array.isArray(data.fouls))        state.fouls = data.fouls;
+  if(Array.isArray(data.timeoutsUsed)) state.timeoutsUsed = data.timeoutsUsed;
+  if(Array.isArray(data.bonusActive))  state.bonusActive = data.bonusActive;
+  if(Array.isArray(data.possession))   state.possession = data.possession;
+  if(Array.isArray(data.names))        state.names = data.names.slice(0,2);
+  if(Array.isArray(data.colors))       state.colors = data.colors.slice(0,2);
+  if(typeof data.period === 'number')      state.period = data.period;
+  if(typeof data.remainingMs === 'number') state.remainingMs = data.remainingMs;
+  if(typeof data.running === 'boolean')    state.running = data.running;
+  const c = data.config;
+  if(c && typeof c === 'object'){
+    if(typeof c.periodsRegular === 'number') state.config.periods = c.periodsRegular;
+    if(typeof c.periods === 'number')        state.config.periods = c.periods;
+    ['timeoutMode','timeoutsPerHalf','timeoutsOvertime','bonusMode','bonus','manualFouls','possession','scoreTeamColor']
+      .forEach(k=>{ if(k in c) state.config[k] = c[k]; });
+  }
+  // aggiorna nomi negli input (in display sono di sola lettura)
+  if(elName && elName[0]) elName[0].value = state.names[0];
+  if(elName && elName[1]) elName[1].value = state.names[1];
+  applyFoulMode();
+  applyScoreColors();
+  renderAll();
+  if(state.running && state.remainingMs > 0) displayStartClock();
+  else displayStopClock();
+}
+window.applyDisplayState = applyDisplayState;
+
+/* Attiva la modalità display: nasconde i comandi, blocca le interazioni e
+   interroga periodicamente lo stato dal server integrato (polling semplice e
+   robusto). Resta disponibile anche window.applyDisplayState per push diretti. */
+function initDisplayMode(){
+  body.classList.add('display-only');
+  // nomi in sola lettura
+  if(elName){ elName.forEach(inp=>{ if(inp){ inp.readOnly = true; inp.tabIndex = -1; } }); }
+  // polling dello stato dal server integrato; il ticker locale rende fluido il tempo
+  async function poll(){
+    try{
+      const r = await fetch('state', { cache: 'no-store' });
+      if(r && r.ok){ applyDisplayState(await r.text()); }
+    }catch(_){ /* server non raggiungibile: riprova al giro successivo */ }
+  }
+  window.__castPoll = setInterval(poll, 750);
+  poll();
 }
 
 /* =====================================================================
@@ -1224,6 +1316,25 @@ function toggleScoreColor(){
 onActivate($('#btnMore'), ()=>{ updateMuteLabel(); updateFoulLabel(); updateScoreColorLabel(); openSheet('moreBackdrop'); });
 onActivate($('#moreClose'), ()=> closeSheet('moreBackdrop'));
 onActivate($('#actCheckUpdate'), checkForUpdates);
+
+/* Cosa è il Baskin: apre il pannello informativo */
+onActivate($('#actAboutBaskin'), ()=>{ closeSheet('moreBackdrop'); openSheet('baskinInfoBackdrop'); });
+onActivate($('#baskinInfoClose'), ()=>{ closeSheet('baskinInfoBackdrop'); });
+
+/* voci disponibili solo dentro l'app Android "Cast" (window.CastBridge) */
+(function setupCastMenu(){
+  const cb = window.CastBridge;
+  if(!cb) return;
+  if(typeof cb.showConnectInfo === 'function'){
+    const b = $('#actCastConnect');
+    if(b){ b.hidden = false; onActivate(b, ()=>{ closeSheet('moreBackdrop'); try{ cb.showConnectInfo(); }catch(_){} }); }
+  }
+  if(typeof cb.openRoleSettings === 'function'){
+    const b = $('#actCastRole');
+    if(b){ b.hidden = false; onActivate(b, ()=>{ closeSheet('moreBackdrop'); try{ cb.openRoleSettings(); }catch(_){} }); }
+  }
+})();
+
 onActivate($('#actScoreColor'), toggleScoreColor);
 onActivate($('#actMute'), toggleMute);
 onActivate($('#actSettings'), ()=>{ closeSheet('moreBackdrop'); openSettings(); });
@@ -1298,6 +1409,7 @@ document.querySelectorAll('.sheet-backdrop').forEach(bd=>{
 
 /* tasto spazio = play/pausa (comodo da tastiera/telecomando) */
 document.addEventListener('keydown', (e)=>{
+  if(DISPLAY_MODE) return;   // in sola visualizzazione nessun comando da tastiera
   if(e.code === 'Space' && body.classList.contains('mode-game') && !isTyping(e)){
     e.preventDefault(); ensureAudio(); togglePlay();
   }
@@ -1309,14 +1421,20 @@ function isTyping(e){ const t=e.target; return t && (t.tagName==='INPUT'||t.tagN
    ===================================================================== */
 renderAll();
 
+/* modalità sola visualizzazione (?display=1): nasconde i comandi e si collega
+   al flusso degli aggiornamenti (SSE / window.applyDisplayState) */
+if(DISPLAY_MODE){ initDisplayMode(); }
+
 /* ripristina le preferenze salvate (schermo sempre acceso) */
 {
   const ws = $('#wakeState'); if(ws) ws.textContent = wakeWanted ? 'on' : 'off';
   if(wakeWanted) acquireWake();
 }
 
-/* service worker per il funzionamento offline + applicazione affidabile degli aggiornamenti */
-if('serviceWorker' in navigator){
+/* service worker per il funzionamento offline + applicazione affidabile degli aggiornamenti.
+   In modalità display NON si registra: la pagina è un visualizzatore live servito da un
+   web server, e il SW rischierebbe di mettere in cache lo stato (/state). */
+if(!DISPLAY_MODE && 'serviceWorker' in navigator){
   const hadController = !!navigator.serviceWorker.controller;  // false al primissimo install
   let refreshing = false, pendingReload = false;
 

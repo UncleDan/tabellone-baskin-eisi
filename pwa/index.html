@@ -204,12 +204,16 @@
       <h2>Informazioni</h2>
       <div class="about">
         <p class="about-title">Tabellone Baskin</p>
-        <p class="about-meta">Versione <span id="aboutVersion">1.14.1</span> — Daniele Lolli (UncleDan)</p>
+        <p class="about-meta">Versione <span id="aboutVersion">1.15.2</span> — Daniele Lolli (UncleDan)</p>
       </div>
       <!-- verdi: installazione / aggiornamenti / sorgenti -->
       <button class="sheet-item green" id="actInstall" type="button" hidden>Installa app</button>
       <button class="sheet-item green" id="actCheckUpdate" type="button">Verifica aggiornamenti</button>
       <a class="sheet-item sheet-link green" id="actRepo" href="https://github.com/UncleDan/baskin-tabellone" target="_blank" rel="noopener noreferrer">Codice sorgente su GitHub ↗</a>
+      <button class="sheet-item green" id="actAboutBaskin" type="button">Cosa è il Baskin</button>
+      <!-- solo nell'app Cast (visibili se presente window.CastBridge) -->
+      <button class="sheet-item green" id="actCastConnect" type="button" hidden>Indirizzo / QR per la TV</button>
+      <button class="sheet-item green" id="actCastRole" type="button" hidden>Ruolo dispositivo…</button>
       <!-- ambra: opzioni di visualizzazione/audio -->
       <button class="sheet-item amber" id="actWake" type="button">Schermo sempre acceso: <span id="wakeState">off</span></button>
       <button class="sheet-item amber" id="actScoreColor" type="button">Punti colore squadra: <span id="scoreColorState">off</span></button>
@@ -220,6 +224,19 @@
       <button class="sheet-item darkred" id="actQuit" type="button">Chiudi applicazione</button>
       <!-- sempre ultimo: chiude solo il menu -->
       <button class="sheet-close" id="moreClose" type="button">Chiudi menu</button>
+    </div>
+  </div>
+
+  <!-- ============ COSA È IL BASKIN ============ -->
+  <div class="sheet-backdrop" id="baskinInfoBackdrop" hidden>
+    <div class="sheet" role="dialog" aria-label="Cosa è il Baskin">
+      <h2>Cosa è il Baskin</h2>
+      <p class="sheet-text">Il Baskin è uno sport inclusivo per progettazione, nato in Italia nei primi anni duemila, che prevede per regolamento la partecipazione di atleti di entrambi i sessi con e senza disabilità. Il regolamento del Baskin è una proprietà intellettuale di <em>Associazione Baskin</em> ed i campionati in Italia sono organizzati da <em>EISI - Ente Italiano Sport Inclusivi</em>, Ente di Promozione Paralimpica riconosciuto dal <em>Comitato Italiano Paralimpico</em>.</p>
+      <div class="sheet-row">
+        <a class="sheet-item green" href="https://baskin.it" target="_blank" rel="noopener noreferrer">baskin.it ↗</a>
+        <a class="sheet-item green" href="https://eisi.it" target="_blank" rel="noopener noreferrer">eisi.it ↗</a>
+      </div>
+      <button class="sheet-close" id="baskinInfoClose" type="button">Chiudi</button>
     </div>
   </div>
 
