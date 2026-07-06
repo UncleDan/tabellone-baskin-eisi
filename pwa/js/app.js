@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.15.3';
+const APP_VERSION = '1.15.4';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* Modalità "sola visualizzazione": attivata con ?display=1 nell'URL.
