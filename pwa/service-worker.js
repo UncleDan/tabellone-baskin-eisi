@@ -3,7 +3,7 @@
    Cache-first per il funzionamento completamente offline.
    Aggiornare CACHE_NAME ad ogni rilascio per forzare l'aggiornamento.
    ===================================================================== */
-const CACHE_NAME = 'baskin-tabellone-v1.15.2';
+const CACHE_NAME = 'baskin-tabellone-v1.15.3';
 
 const ASSETS = [
   './',
@@ -15,7 +15,9 @@ const ASSETS = [
   './sounds/whistle.wav',
   './icons/icon-192.png',
   './icons/icon-512.png',
-  './icons/icon-maskable-512.png'
+  './icons/icon-maskable-512.png',
+  './icons/logos/logo-baskin.svg',
+  './icons/logos/logo-eisi.svg'
 ];
 
 /* messaggio dall'app: attiva subito la nuova versione in attesa */

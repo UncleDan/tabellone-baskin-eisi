@@ -592,3 +592,42 @@ body.display-only #name2{
   -webkit-user-select: none; user-select: none;
   background: transparent !important;
 }
+
+/* =====================================================================
+   LOGHI (marchio Baskin/EISI) — decorativi, non interattivi
+   Ancorati in basso al centro, tra i due gruppi di corner-actions
+   (che occupano gli angoli), così non intralciano alcun comando.
+   ===================================================================== */
+.brand-logos{
+  position: absolute;
+  left: 50%;
+  bottom: clamp(6px, 1.2vh, 16px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2vw, 22px);
+  pointer-events: none;             /* mai un ostacolo al tocco */
+  opacity: 0.55;
+  z-index: 1;                       /* sotto ai fogli/modali, sopra allo sfondo */
+}
+.brand-logo{
+  height: clamp(18px, 3.2vh, 34px);
+  width: auto;
+  display: block;
+  filter: brightness(0) invert(1);  /* logo in bianco, coerente col tema scuro */
+}
+/* il logo Baskin è più "alto" (verticale): leggera riduzione per bilanciare
+   otticamente l'altezza percepita rispetto al logo EISI (più orizzontale) */
+.brand-logo-baskin{ height: clamp(16px, 2.8vh, 30px); }
+
+/* in modalità impostazioni nasconde i loghi: lo spazio in basso può servire
+   ai controlli di modifica (es. reset a sinistra) su schermi stretti */
+body.mode-edit .brand-logos{ display:none; }
+
+/* niente loghi in modalità display: sullo schermo/TV il tabellone resta pulito */
+body.display-only .brand-logos{ display:none; }
+
+/* su schermi molto bassi (landscape stretto) li nasconde per non affollare */
+@media (max-height: 340px){
+  .brand-logos{ display:none; }
+}
