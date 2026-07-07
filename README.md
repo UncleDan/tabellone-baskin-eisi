@@ -29,7 +29,7 @@ Due schermate:
 Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, quindi funziona davvero offline.
 
 <p align="center">
-  <a href="https://www.uncledan.it/tabellone-baskin/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
+  <a href="https://uncledan.github.io/baskin-tabellone/pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
 </p>
 
 ---
