@@ -14,7 +14,7 @@
    Aggiornare CACHE_NAME ad ogni rilascio: serve sia a invalidare la vecchia
    cache sia a far dichiarare al file la propria versione.
    ===================================================================== */
-const CACHE_NAME = 'baskin-tabellone-v1.16.5';
+const CACHE_NAME = 'baskin-tabellone-v1.16.6';
 
 const ASSETS = [
   './',
