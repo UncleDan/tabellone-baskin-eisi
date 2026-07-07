@@ -163,9 +163,9 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
 .team-name{
   font-weight: 800;
   font-size: clamp(33px, 9vh, 96px);
-  line-height: 1.05;
+  line-height: 1.2;
   text-align: center;
-  padding: .05em .4em;
+  padding: .05em .4em .12em;
   max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
