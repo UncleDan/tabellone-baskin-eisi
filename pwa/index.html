@@ -206,7 +206,7 @@
       <h2>Informazioni</h2>
       <div class="about">
         <p class="about-title">Tabellone Baskin</p>
-        <p class="about-meta">Versione <span id="aboutVersion">1.15.5</span> — Daniele Lolli (UncleDan)</p>
+        <p class="about-meta">Versione <span id="aboutVersion">1.16.0</span> — Daniele Lolli (UncleDan)</p>
       </div>
       <!-- verdi: installazione / aggiornamenti / sorgenti -->
       <button class="sheet-item green" id="actInstall" type="button" hidden>Installa app</button>
@@ -238,6 +238,7 @@
         <a class="sheet-item green" href="https://baskin.it" target="_blank" rel="noopener noreferrer">baskin.it ↗</a>
         <a class="sheet-item green" href="https://eisi.it" target="_blank" rel="noopener noreferrer">eisi.it ↗</a>
       </div>
+      <p class="sheet-text disclaimer">«EISI» e «Baskin» sono marchi registrati rispettivamente da Ente Italiano Sport Inclusivi e Associazione Baskin.</p>
       <button class="sheet-close" id="baskinInfoClose" type="button">Chiudi</button>
     </div>
   </div>
@@ -247,14 +248,16 @@
     <div class="sheet" role="dialog" aria-label="Impostazioni partita">
       <h2>Impostazioni partita</h2>
 
-      <!-- Preset Baskin/Basket -->
-      <div class="sheet-row">
+      <!-- Modalità: Baskin / Basket FIBA / Personalizza -->
+      <div class="sheet-row sheet-row-3">
         <button class="sheet-item green" id="presetBaskin" type="button">Baskin</button>
         <button class="sheet-item green" id="presetBasket" type="button">Basket FIBA</button>
+        <button class="sheet-item green" id="presetCustom" type="button">Personalizza</button>
       </div>
 
-      <!-- Sezione personalizzate -->
-      <h3 style="font-size: 0.9em; margin-top: 1em; color: #bdbdbd;">Personalizzate</h3>
+      <!-- Parametri di gara (modificabili solo in "Personalizza") -->
+      <h3 style="font-size: 0.9em; margin-top: 1em; color: #bdbdbd;">Parametri di gara</h3>
+      <div id="disciplineFields">
 
       <label class="field">
         <span>Durata periodo (minuti)</span>
@@ -304,6 +307,8 @@
         <span>Sirena automatica a fine tempo</span>
         <input type="checkbox" id="cfgAutoHorn" />
       </label>
+
+      </div><!-- /disciplineFields -->
 
       <h3 style="font-size: 0.9em; margin-top: 1em; color: #bdbdbd;">Streaming BaskinCam</h3>
       <label class="field switch">

@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.15.5';
+const APP_VERSION = '1.16.0';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* Modalità "sola visualizzazione": attivata con ?display=1 nell'URL.
@@ -16,6 +16,16 @@ const DISPLAY_MODE = (()=>{ try{ return new URLSearchParams(location.search).get
 
 /* Repository del codice sorgente (modifica l'URL se cambi repo) */
 const REPO_URL = 'https://github.com/UncleDan/baskin-tabellone';
+
+/* =====================================================================
+   >>> LOGHI EISI/BASKIN: default per la pubblicazione <<<
+   UNICA variabile da cambiare per pubblicare CON o SENZA i loghi.
+   true  = loghi mostrati (solo quando è attivo il preset Baskin)
+   false = loghi mai mostrati
+   L'utente NON ha un interruttore per i loghi: compaiono soltanto se
+   questa costante è true E il preset corrente è "baskin".
+   ===================================================================== */
+const DEFAULT_SHOW_LOGOS = true;
 
 /* ---------- Configurazione predefinita (modificabile da Impostazioni) ---------- */
 const DEFAULT_CONFIG = {
@@ -33,7 +43,8 @@ const DEFAULT_CONFIG = {
   resetFoulsEachPeriod: true,
   autoHorn: true,
   baskinCamEnabled: false, // streaming stato verso dispositivo companion BaskinCam
-  baskinCamHost: ''        // IP:porta del BaskinCam (es. 192.168.1.50:8080), vuoto = disattivo
+  baskinCamHost: '',       // IP:porta del BaskinCam (es. 192.168.1.50:8080), vuoto = disattivo
+  configMode: 'baskin'     // preset attivo: 'baskin' | 'fiba' | 'custom' (governa campi e loghi)
 };
 
 /* Preset di disciplina: i pulsanti "Baskin"/"Basket FIBA" reimpostano i campi
@@ -111,7 +122,9 @@ function loadState(){
     const raw = localStorage.getItem(STORE_KEY);
     if(raw){
       const s = JSON.parse(raw);
-      s.config = { ...DEFAULT_CONFIG, ...(s.config || {}) };
+      const rawCfg = s.config || {};
+      const hadMode = typeof rawCfg.configMode === 'string';
+      s.config = { ...DEFAULT_CONFIG, ...rawCfg };
       // migrazione: vecchio flag autoBonusLast2 -> bonusMode
       if(typeof s.config.bonusMode !== 'string'){
         s.config.bonusMode = s.config.autoBonusLast2 === false ? 'off' : 'last2';
@@ -122,6 +135,17 @@ function loadState(){
         s.config.baskinCamHost = s.config.baskinCamTarget;
       }
       delete s.config.baskinCamTarget;
+      // migrazione: configMode assente -> dedotto dai parametri salvati
+      if(!hadMode){
+        const c = s.config;
+        if(c.timeoutMode === 'baskin' && c.bonusMode === 'last2' && !c.manualFouls && !c.possession){
+          c.configMode = 'baskin';
+        } else if(c.timeoutMode === 'fiba' && c.bonusMode === 'teamFouls'){
+          c.configMode = 'fiba';
+        } else {
+          c.configMode = 'custom';
+        }
+      }
       s.running = false;            // non si riprende mai "in corsa"
       if(!Array.isArray(s.names)) s.names = ['Squadra 1','Squadra 2'];
       if(!Array.isArray(s.colors)) s.colors = ['#ffffff','#ffffff'];
@@ -194,7 +218,8 @@ function costruisciPayloadStato(){
       bonus: cfg.bonus,
       manualFouls: cfg.manualFouls,
       possession: cfg.possession,
-      scoreTeamColor: cfg.scoreTeamColor
+      scoreTeamColor: cfg.scoreTeamColor,
+      configMode: cfg.configMode
     }
   };
 }
@@ -264,7 +289,7 @@ function applyDisplayState(data){
   if(c && typeof c === 'object'){
     if(typeof c.periodsRegular === 'number') state.config.periods = c.periodsRegular;
     if(typeof c.periods === 'number')        state.config.periods = c.periods;
-    ['timeoutMode','timeoutsPerHalf','timeoutsOvertime','bonusMode','bonus','manualFouls','possession','scoreTeamColor']
+    ['timeoutMode','timeoutsPerHalf','timeoutsOvertime','bonusMode','bonus','manualFouls','possession','scoreTeamColor','configMode']
       .forEach(k=>{ if(k in c) state.config[k] = c[k]; });
   }
   // aggiorna nomi negli input (in display sono di sola lettura)
@@ -272,6 +297,7 @@ function applyDisplayState(data){
   if(elName && elName[1]) elName[1].value = state.names[1];
   applyFoulMode();
   applyScoreColors();
+  applyLogos();
   renderAll();
   if(state.running && state.remainingMs > 0) displayStartClock();
   else displayStopClock();
@@ -1027,6 +1053,39 @@ function applyPeriodEditor(){
 
 /* --- impostazioni partita --- */
 let pendingTimeoutMode = 'baskin';
+let pendingMode = 'baskin';   // modalità selezionata nel form: 'baskin' | 'fiba' | 'custom'
+
+/* Campi "parametri di gara": abilitati SOLO in modalità Personalizza */
+const DISCIPLINE_FIELDS = ['#cfgMinutes','#cfgPeriods','#cfgOvertime','#cfgTimeoutsHalf','#cfgTimeoutsOt','#cfgBonusMode','#cfgBonus','#cfgFouls','#cfgResetFouls','#cfgPossession','#cfgAutoHorn'];
+
+function setDisciplineFieldsEnabled(enabled){
+  DISCIPLINE_FIELDS.forEach(sel=>{ const el = $(sel); if(el) el.disabled = !enabled; });
+  const box = $('#disciplineFields'); if(box) box.classList.toggle('fields-locked', !enabled);
+}
+function highlightModeButtons(){
+  [['#presetBaskin','baskin'],['#presetBasket','fiba'],['#presetCustom','custom']].forEach(([sel,m])=>{
+    const b = $(sel);
+    if(b){ b.classList.toggle('is-active', pendingMode === m); b.setAttribute('aria-pressed', pendingMode === m ? 'true' : 'false'); }
+  });
+}
+/* Imposta la modalità nel form (NON salva). refill=true ricarica i valori del
+   preset nei campi (per Baskin/FIBA); per Personalizza i valori restano quelli
+   già presenti (ultimi scelti) e i campi diventano modificabili. */
+function setSettingsMode(mode, refill){
+  pendingMode = (mode === 'fiba' || mode === 'custom') ? mode : 'baskin';
+  if(pendingMode === 'baskin' && refill){ fillSettingsForm({ ...state.config, ...PRESET_BASKIN }); }
+  else if(pendingMode === 'fiba' && refill){ fillSettingsForm({ ...state.config, ...PRESET_BASKET_FIBA }); }
+  setDisciplineFieldsEnabled(pendingMode === 'custom');
+  highlightModeButtons();
+}
+
+/* Applica la visibilità dei loghi: compaiono SOLO se DEFAULT_SHOW_LOGOS è true
+   E il preset attivo è Baskin. L'utente non ha un interruttore dedicato. */
+function applyLogos(){
+  const show = DEFAULT_SHOW_LOGOS && state.config.configMode === 'baskin';
+  document.body.classList.toggle('hide-logos', !show);
+}
+
 function fillSettingsForm(c){
   $('#cfgMinutes').value = c.minutes;
   $('#cfgPeriods').value = c.periods;
@@ -1045,6 +1104,8 @@ function fillSettingsForm(c){
 }
 function openSettings(){
   fillSettingsForm(state.config);
+  const mode = (state.config.configMode === 'fiba' || state.config.configMode === 'custom') ? state.config.configMode : 'baskin';
+  setSettingsMode(mode, false);   // riflette la modalità corrente senza sovrascrivere i valori reali
   openSheet('settingsBackdrop');
 }
 function saveSettings(){
@@ -1053,26 +1114,35 @@ function saveSettings(){
     if(isNaN(v)) v = def;
     return Math.min(max, Math.max(min, v));
   };
-  state.config.minutes  = num('#cfgMinutes', 8, 1, 60);
-  state.config.periods  = num('#cfgPeriods', 4, 1, 12);
-  state.config.overtimeMinutes = num('#cfgOvertime', 4, 1, 30);
-  state.config.timeoutsPerHalf = num('#cfgTimeoutsHalf', 2, 0, 9);
-  state.config.timeoutsOvertime = num('#cfgTimeoutsOt', 1, 0, 9);
-  state.config.bonus    = num('#cfgBonus', 5, 1, 20);
-  const bm = $('#cfgBonusMode').value;
-  state.config.bonusMode = (bm === 'teamFouls' || bm === 'off') ? bm : 'last2';
-  state.config.resetFoulsEachPeriod = $('#cfgResetFouls').checked;
-  state.config.manualFouls = $('#cfgFouls').checked;
-  state.config.possession = $('#cfgPossession').checked;
-  state.config.autoHorn = $('#cfgAutoHorn').checked;
+  if(pendingMode === 'baskin' || pendingMode === 'fiba'){
+    // preset: i parametri di gara arrivano dal preset (campi disabilitati)
+    const preset = (pendingMode === 'fiba') ? PRESET_BASKET_FIBA : PRESET_BASKIN;
+    Object.assign(state.config, preset);
+    state.config.configMode = pendingMode;
+  } else {
+    // personalizza: legge i campi
+    state.config.minutes  = num('#cfgMinutes', 8, 1, 60);
+    state.config.periods  = num('#cfgPeriods', 4, 1, 12);
+    state.config.overtimeMinutes = num('#cfgOvertime', 4, 1, 30);
+    state.config.timeoutsPerHalf = num('#cfgTimeoutsHalf', 2, 0, 9);
+    state.config.timeoutsOvertime = num('#cfgTimeoutsOt', 1, 0, 9);
+    state.config.bonus    = num('#cfgBonus', 5, 1, 20);
+    const bm = $('#cfgBonusMode').value;
+    state.config.bonusMode = (bm === 'teamFouls' || bm === 'off') ? bm : 'last2';
+    state.config.resetFoulsEachPeriod = $('#cfgResetFouls').checked;
+    state.config.manualFouls = $('#cfgFouls').checked;
+    state.config.possession = $('#cfgPossession').checked;
+    state.config.autoHorn = $('#cfgAutoHorn').checked;
+    state.config.timeoutMode = (pendingTimeoutMode === 'fiba') ? 'fiba' : 'baskin';
+    state.config.configMode = 'custom';
+  }
+  // Streaming BaskinCam: sempre dai campi (indipendente dalla disciplina)
   state.config.baskinCamEnabled = $('#cfgBaskinCam').checked;
   state.config.baskinCamHost = ($('#cfgBaskinCamHost').value || '').trim();
-  // validazione leggera del formato IP:porta (solo avviso, non blocca il salvataggio)
   const tgt = state.config.baskinCamHost;
   if(state.config.baskinCamEnabled && tgt && !/^\d{1,3}(\.\d{1,3}){3}:\d{2,5}$/.test(tgt)){
     toast('BaskinCam: formato consigliato IP:porta (es. 192.168.1.50:8080)');
   }
-  state.config.timeoutMode = (pendingTimeoutMode === 'fiba') ? 'fiba' : 'baskin';
   if(!state.config.manualFouls){ state.fouls = [0,0]; }   // falli off: azzera i contatori
   if(state.config.bonusMode !== 'teamFouls'){ state.bonusActive = [false,false]; }
   if(!state.config.possession){ state.possession = [false,false]; }
@@ -1084,17 +1154,10 @@ function saveSettings(){
   closeSheet('settingsBackdrop');
   applyFoulMode();
   updateFoulLabel();
+  applyLogos();
   renderAll();
   saveState();
   toast('Impostazioni salvate');
-}
-
-/* Applica un preset di disciplina ai campi del form (non salva: serve "Salva") */
-function applyPreset(preset){
-  // mantiene durata/periodo correnti? no: il preset reimposta tutti i campi di gara
-  const merged = { ...state.config, ...preset };
-  fillSettingsForm(merged);
-  toast(preset.timeoutMode === 'fiba' ? 'Preset Basket FIBA (poi Salva)' : 'Preset Baskin (poi Salva)');
 }
 
 /* Reset applicazione: riporta TUTTO ai valori predefiniti (Baskin) */
@@ -1102,9 +1165,11 @@ function resetApp(){
   stopClock();
   state = freshState(DEFAULT_CONFIG);
   pendingTimeoutMode = 'baskin';
+  pendingMode = 'baskin';
   closeSheet('settingsBackdrop');
   applyFoulMode();
   updateFoulLabel();
+  applyLogos();
   renderAll();
   saveState();
   toast('Applicazione azzerata');
@@ -1368,8 +1433,9 @@ onActivate($('#rotateInstall'), doInstall);
 /* impostazioni */
 onActivate($('#settingsSave'), saveSettings);
 onActivate($('#settingsClose'), ()=> closeSheet('settingsBackdrop'));
-onActivate($('#presetBaskin'), ()=> applyPreset(PRESET_BASKIN));
-onActivate($('#presetBasket'), ()=> applyPreset(PRESET_BASKET_FIBA));
+onActivate($('#presetBaskin'), ()=> setSettingsMode('baskin', true));
+onActivate($('#presetBasket'), ()=> setSettingsMode('fiba', true));
+onActivate($('#presetCustom'), ()=> setSettingsMode('custom', false));
 
 /* frecce possesso */
 onActivate($('#possLeft'), ()=> tapPossession('left'));
@@ -1420,6 +1486,7 @@ function isTyping(e){ const t=e.target; return t && (t.tagName==='INPUT'||t.tagN
    AVVIO
    ===================================================================== */
 renderAll();
+applyLogos();
 
 /* modalità sola visualizzazione (?display=1): nasconde i comandi e si collega
    al flusso degli aggiornamenti (SSE / window.applyDisplayState) */

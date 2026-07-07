@@ -6,8 +6,14 @@ Il Baskin è uno sport inclusivo per progettazione, nato in Italia nei primi ann
 
 Per approfondire: [baskin.it](https://baskin.it) · [eisi.it](https://eisi.it)
 
-I loghi ufficiali di Associazione Baskin ed EISI compaiono, in filigrana e non
-interattivi, nella schermata di gioco della PWA.
+I loghi EISI e Baskin compaiono, non interattivi, accanto al bonus falli nella
+schermata di gioco **solo in modalità Baskin** e **solo se abilitati** per la
+pubblicazione tramite la costante `DEFAULT_SHOW_LOGOS` in `pwa/js/app.js`
+(`true`/`false`, unica variabile da toccare). L'utente non ha un interruttore
+dedicato.
+
+> «EISI» e «Baskin» sono marchi registrati rispettivamente da Ente Italiano
+> Sport Inclusivi e Associazione Baskin.
 
 ---
 
@@ -292,4 +298,4 @@ Dal menu **…** dell'app è disponibile il link diretto al **repository GitHub*
 ---
 
 **Autore:** Daniele Lolli (UncleDan)  
-**Versione:** 1.15.5
+**Versione:** 1.16.0
