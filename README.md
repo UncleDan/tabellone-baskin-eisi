@@ -2,7 +2,7 @@
 
 ## Cos'è il Baskin
 
-Il Baskin è uno sport inclusivo per progettazione, nato in Italia nei primi anni duemila, che prevede per regolamento la partecipazione di atleti di entrambi i sessi con e senza disabilità. Il regolamento del Baskin è una proprieta intellettuale di *Associazione Baskin* ed i campionati in Italia sono organizzati da *EISI - Ente Italiano Sport Inclusivi*, Ente di Promozione Paralimpica riconosciuto dal *Comitato Italiano Paralimpico*.
+Il Baskin è uno sport fondato sul basket, inclusivo per progettazione, che prevede per regolamento la partecipazione simultanea degli atleti senza divisione in categorie grazie ad un sistema basato sui ruoli in campo: atleti di entrambi i sessi, con e senza disabilità, con disabilità fisiche e/o cognitive giocano insieme sullo stesso campo la stessa partita. Il regolamento del Baskin è una proprieta intellettuale di *Associazione Baskin* ed i campionati in Italia sono organizzati da *EISI - Ente Italiano Sport Inclusivi*, Ente di Promozione Paralimpica riconosciuto dal *Comitato Italiano Paralimpico*.
 
 Per approfondire: [baskin.it](https://baskin.it) · [eisi.it](https://eisi.it)
 
@@ -12,8 +12,8 @@ pubblicazione tramite la costante `DEFAULT_SHOW_LOGOS` in `pwa/js/app.js`
 (`true`/`false`, unica variabile da toccare). L'utente non ha un interruttore
 dedicato.
 
-> «EISI» e «Baskin» sono marchi registrati rispettivamente da Ente Italiano
-> Sport Inclusivi e Associazione Baskin.
+> I loghi «EISI» e «Baskin» sono marchi registrati rispettivamente da Ente
+> Italiano Sport Inclusivi e Associazione Baskin.
 
 ---
 
@@ -298,4 +298,4 @@ Dal menu **…** dell'app è disponibile il link diretto al **repository GitHub*
 ---
 
 **Autore:** Daniele Lolli (UncleDan)  
-**Versione:** 1.16.0
+**Versione:** 1.16.1
