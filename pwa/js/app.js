@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.16.4';
+const APP_VERSION = '1.16.5';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* Modalità "sola visualizzazione": attivata con ?display=1 nell'URL.
@@ -1492,6 +1492,12 @@ function isTyping(e){ const t=e.target; return t && (t.tagName==='INPUT'||t.tagN
    ===================================================================== */
 renderAll();
 applyLogos();
+
+/* mostra la versione reale nel menu "Informazioni" (evita disallineamenti:
+   basta aggiornare APP_VERSION in cima al file) */
+{
+  const av = $('#aboutVersion'); if(av) av.textContent = APP_VERSION;
+}
 
 /* modalità sola visualizzazione (?display=1): nasconde i comandi e si collega
    al flusso degli aggiornamenti (SSE / window.applyDisplayState) */
