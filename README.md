@@ -139,7 +139,7 @@ baskin-tabellone/
 
 - **Colori**: variabili `--green`, `--red`, `--yellow` in `pwa/css/styles.css`.
 - **Valori predefiniti** (minuti, periodi, timeout, bonus): oggetto `DEFAULT_CONFIG` in `pwa/js/app.js`.
-- **Aggiornamenti offline**: a ogni rilascio incrementa `CACHE_NAME` in `pwa/service-worker.js` (e la versione in `app.js`/manifest) per forzare l'aggiornamento della cache sui dispositivi.
+- **Aggiornamenti**: non sono automatici. A ogni rilascio incrementa `CACHE_NAME` in `pwa/service-worker.js` (e la versione in `app.js`/manifest); l'utente verifica da "Verifica aggiornamenti" nelle impostazioni e, se disponibile una nuova versione, deve disinstallare e reinstallare l'app per applicarla.
 
 ---
 
@@ -298,4 +298,4 @@ Dal menu **…** dell'app è disponibile il link diretto al **repository GitHub*
 ---
 
 **Autore:** Daniele Lolli (UncleDan)  
-**Versione:** 1.16.2
+**Versione:** 1.16.3

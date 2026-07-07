@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.16.2';
+const APP_VERSION = '1.16.3';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* Modalità "sola visualizzazione": attivata con ?display=1 nell'URL.
@@ -712,8 +712,6 @@ function stopClock(){
   body.dataset.running = 'false';
   renderTimer();
   saveState();
-  // se c'era un aggiornamento in attesa (rinviato per non interrompere la partita), applicalo ora
-  if(window.__applyPendingUpdate){ window.__applyPendingUpdate(); }
 }
 
 let lastAutoBonus = false;
@@ -1261,53 +1259,32 @@ async function checkForUpdates(){
   if(!reg){ toast('Service worker non attivo'); return; }
   toast('Controllo aggiornamenti…');
 
-  // versione già scaricata e in attesa: attivala subito.
-  // Il ricaricamento avviene tramite l'evento 'controllerchange' (vedi avvio),
-  // che attende anche che il cronometro sia fermo per non interrompere la partita.
-  if(reg.waiting){ reg.waiting.postMessage({ type:'SKIP_WAITING' }); return; }
-
-  let found = false;
-  reg.addEventListener('updatefound', ()=>{
-    found = true;
-    const nw = reg.installing;
-    if(!nw) return;
-    nw.addEventListener('statechange', ()=>{
-      if(nw.state === 'installed' && navigator.serviceWorker.controller){
-        nw.postMessage({ type:'SKIP_WAITING' });   // attiva -> controllerchange -> reload
-      }
-    });
-  });
-
-  // Alcuni host (GitHub Pages/Netlify) servono service-worker.js dalla cache HTTP
-  // del browser: reg.update() da solo può quindi non accorgersi di nulla di nuovo.
-  // Forziamo prima una richiesta diretta in rete, bypassando quella cache, così
-  // il browser scarica sempre l'ultimo file prima del controllo vero e proprio.
+  // Confrontiamo direttamente la versione del file service-worker.js in rete
+  // (bypassando la cache HTTP del browser) con quella attualmente attiva.
+  // Nessuna attivazione automatica: se c'è una versione nuova, va applicata
+  // disinstallando e reinstallando l'app.
   let remoteCacheName = null;
   try{
     const res = await fetch('service-worker.js', { cache: 'no-store' });
     const text = await res.text();
     const m = text.match(/CACHE_NAME\s*=\s*['"]([^'"]+)['"]/);
     if(m) remoteCacheName = m[1];
-  }catch(e){}
+  }catch(e){
+    toast('Impossibile controllare: verifica la connessione');
+    return;
+  }
 
-  try{ await reg.update(); }catch(e){}
-
-  // Diamo più tempo del solito (rete lenta / CDN) prima di concludere che non
-  // ci sono aggiornamenti, e controlliamo lo stato reale della registration
-  // invece di fidarci solo del flag temporizzato dall'evento.
-  setTimeout(()=>{
-    if(found || reg.waiting || reg.installing) return;
-
-    // Fallback: se il file scaricato in rete dichiara una versione diversa da
-    // quella attiva, il browser sta comunque servendo asset in cache nonostante
-    // il bypass richiesto (capita con alcune configurazioni CDN). In quel caso
-    // l'aggiornamento automatico non è affidabile: lo diciamo chiaramente.
-    if(remoteCacheName && remoteCacheName !== `baskin-tabellone-v${APP_VERSION}`){
-      toast(`Nuova versione disponibile (${remoteCacheName.replace('baskin-tabellone-v','')}): disinstalla e reinstalla l'app per aggiornare`);
-      return;
-    }
-    toast(`Sei aggiornato (v${APP_VERSION})`);
-  }, 4000);
+  const activeCacheName = `baskin-tabellone-v${APP_VERSION}`;
+  if(!remoteCacheName){
+    toast('Impossibile controllare gli aggiornamenti');
+    return;
+  }
+  if(remoteCacheName !== activeCacheName){
+    const remoteVersion = remoteCacheName.replace('baskin-tabellone-v', '');
+    toast(`Nuova versione disponibile (${remoteVersion}): disinstalla e reinstalla l'app per aggiornare`);
+    return;
+  }
+  toast(`Sei aggiornato (v${APP_VERSION})`);
 }
 
 /* =====================================================================
@@ -1526,58 +1503,13 @@ if(DISPLAY_MODE){ initDisplayMode(); }
   if(wakeWanted) acquireWake();
 }
 
-/* service worker per il funzionamento offline + applicazione affidabile degli aggiornamenti.
+/* service worker per il funzionamento offline.
    In modalità display NON si registra: la pagina è un visualizzatore live servito da un
-   web server, e il SW rischierebbe di mettere in cache lo stato (/state). */
+   web server, e il SW rischierebbe di mettere in cache lo stato (/state).
+   Nessun aggiornamento automatico: la nuova versione va applicata disinstallando
+   e reinstallando l'app (vedi "Verifica aggiornamenti" nelle impostazioni). */
 if(!DISPLAY_MODE && 'serviceWorker' in navigator){
-  const hadController = !!navigator.serviceWorker.controller;  // false al primissimo install
-  let refreshing = false, pendingReload = false;
-
-  function applyUpdateReload(){
-    if(refreshing) return;
-    // non interrompere una partita in corso: rinvia a cronometro fermo
-    if(typeof state !== 'undefined' && state.running){
-      pendingReload = true;
-      toast('Aggiornamento pronto: si applica a cronometro fermo');
-      return;
-    }
-    refreshing = true;
-    location.reload();
-  }
-  // richiamato da stopClock() quando il cronometro viene fermato
-  window.__applyPendingUpdate = ()=>{ if(pendingReload){ pendingReload = false; applyUpdateReload(); } };
-
-  // quando il nuovo service worker prende il controllo, ricarica per servire i file aggiornati
-  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
-    if(!hadController) return;     // al primo install non serve ricaricare
-    applyUpdateReload();
-  });
-
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('service-worker.js', { updateViaCache: 'none' }).then(reg=>{
-      // controlla subito se c'è una nuova versione (senza attendere il ciclo del browser)
-      reg.update().catch(()=>{});
-      // se all'avvio c'è già una versione in attesa, attivala
-      if(reg.waiting && navigator.serviceWorker.controller){
-        reg.waiting.postMessage({ type:'SKIP_WAITING' });
-      }
-      // quando arriva una nuova versione, appena installata chiedine l'attivazione
-      reg.addEventListener('updatefound', ()=>{
-        const nw = reg.installing;
-        if(!nw) return;
-        nw.addEventListener('statechange', ()=>{
-          if(nw.state === 'installed' && navigator.serviceWorker.controller){
-            nw.postMessage({ type:'SKIP_WAITING' });
-          }
-        });
-      });
-    }).catch(()=>{});
-  });
-
-  // ricontrolla gli aggiornamenti quando si torna sull'app
-  document.addEventListener('visibilitychange', ()=>{
-    if(document.visibilityState === 'visible'){
-      navigator.serviceWorker.getRegistration().then(reg=>{ if(reg) reg.update().catch(()=>{}); }).catch(()=>{});
-    }
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
   });
 }
