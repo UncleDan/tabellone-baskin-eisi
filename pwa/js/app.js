@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.16.3';
+const APP_VERSION = '1.16.4';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* Modalità "sola visualizzazione": attivata con ?display=1 nell'URL.
@@ -1506,10 +1506,38 @@ if(DISPLAY_MODE){ initDisplayMode(); }
 /* service worker per il funzionamento offline.
    In modalità display NON si registra: la pagina è un visualizzatore live servito da un
    web server, e il SW rischierebbe di mettere in cache lo stato (/state).
-   Nessun aggiornamento automatico: la nuova versione va applicata disinstallando
-   e reinstallando l'app (vedi "Verifica aggiornamenti" nelle impostazioni). */
+
+   Comportamento diverso in base a come l'app è aperta:
+   - APERTA NEL BROWSER (non installata): comportamento web standard, si
+     aggiorna da sola in background non appena il browser trova una nuova
+     versione (nessuna partita in corso da interrompere in questo contesto).
+   - INSTALLATA come PWA (standalone): nessun aggiornamento automatico, per
+     non interrompere una partita con un reload a sorpresa. L'utente verifica
+     da "Verifica aggiornamenti" nelle impostazioni e, se c'è una versione
+     nuova, deve disinstallare e reinstallare l'app per applicarla. */
 if(!DISPLAY_MODE && 'serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    navigator.serviceWorker.register('service-worker.js').then(reg=>{
+      if(isStandalone()) return;   // installata: nessun auto-update, vedi sopra
+
+      // non installata: attiva subito una nuova versione trovata e ricarica
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+        if(refreshing) return;
+        refreshing = true;
+        location.reload();
+      });
+      if(reg.waiting){ reg.waiting.postMessage({ type:'SKIP_WAITING' }); }
+      reg.addEventListener('updatefound', ()=>{
+        const nw = reg.installing;
+        if(!nw) return;
+        nw.addEventListener('statechange', ()=>{
+          if(nw.state === 'installed' && navigator.serviceWorker.controller){
+            nw.postMessage({ type:'SKIP_WAITING' });
+          }
+        });
+      });
+      reg.update().catch(()=>{});
+    }).catch(()=>{});
   });
 }
