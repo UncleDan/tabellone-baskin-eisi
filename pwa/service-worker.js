@@ -1,9 +1,12 @@
 /* =====================================================================
    Service worker - Tabellone Baskin
    Cache-first per il funzionamento completamente offline.
-   Aggiornare CACHE_NAME ad ogni rilascio per forzare l'aggiornamento.
+   Nessun aggiornamento automatico: il service worker resta quello installato
+   finché l'app non viene disinstallata e reinstallata (vedi "Verifica
+   aggiornamenti" nelle impostazioni). Aggiornare comunque CACHE_NAME ad ogni
+   rilascio, così il file dichiara sempre la propria versione.
    ===================================================================== */
-const CACHE_NAME = 'baskin-tabellone-v1.16.1';
+const CACHE_NAME = 'baskin-tabellone-v1.16.3';
 
 const ASSETS = [
   './',
@@ -20,18 +23,11 @@ const ASSETS = [
   './icons/logos/logo-eisi.svg'
 ];
 
-/* messaggio dall'app: attiva subito la nuova versione in attesa */
-self.addEventListener('message', (event)=>{
-  if(event.data && event.data.type === 'SKIP_WAITING'){ self.skipWaiting(); }
-});
-
 self.addEventListener('install', (event)=>{
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
-      // 'reload' forza il prelievo dalla rete (ignora la cache HTTP del browser),
-      // così la nuova versione NON viene popolata con i file vecchi: niente hard reset
       cache.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' })))
-    ).then(()=> self.skipWaiting())
+    )
   );
 });
 
@@ -39,7 +35,7 @@ self.addEventListener('activate', (event)=>{
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(()=> self.clients.claim())
+    )
   );
 });
 

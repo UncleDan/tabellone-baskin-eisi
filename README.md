@@ -29,7 +29,7 @@ Due schermate:
 Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, quindi funziona davvero offline.
 
 <p align="center">
-  <a href="https://uncledan.github.io/baskin-tabellone/pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
+  <a href="https://www.uncledan.it/tabellone-baskin/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
 </p>
 
 ---
@@ -139,7 +139,7 @@ baskin-tabellone/
 
 - **Colori**: variabili `--green`, `--red`, `--yellow` in `pwa/css/styles.css`.
 - **Valori predefiniti** (minuti, periodi, timeout, bonus): oggetto `DEFAULT_CONFIG` in `pwa/js/app.js`.
-- **Aggiornamenti offline**: a ogni rilascio incrementa `CACHE_NAME` in `pwa/service-worker.js` (e la versione in `app.js`/manifest) per forzare l'aggiornamento della cache sui dispositivi.
+- **Aggiornamenti**: non sono automatici. A ogni rilascio incrementa `CACHE_NAME` in `pwa/service-worker.js` (e la versione in `app.js`/manifest); l'utente verifica da "Verifica aggiornamenti" nelle impostazioni e, se disponibile una nuova versione, deve disinstallare e reinstallare l'app per applicarla.
 
 ---
 
@@ -298,4 +298,4 @@ Dal menu **…** dell'app è disponibile il link diretto al **repository GitHub*
 ---
 
 **Autore:** Daniele Lolli (UncleDan)  
-**Versione:** 1.16.1
+**Versione:** 1.16.3
