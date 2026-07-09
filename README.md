@@ -7,10 +7,9 @@ Il Baskin è uno sport fondato sul basket, inclusivo per progettazione, che prev
 Per approfondire: [baskin.it](https://baskin.it) · [eisi.it](https://eisi.it)
 
 I loghi EISI e Baskin compaiono, non interattivi, accanto al bonus falli nella
-schermata di gioco **solo in modalità Baskin** e **solo se abilitati** per la
-pubblicazione tramite la costante `DEFAULT_SHOW_LOGOS` in `pwa/js/app.js`
-(`true`/`false`, unica variabile da toccare). L'utente non ha un interruttore
-dedicato.
+schermata di gioco. Sono **fissi e sempre visibili** in ogni modalità e dimensione
+di schermo: non esiste alcun meccanismo (interruttore, modalità o classe CSS) per
+nasconderli.
 
 > I loghi «EISI» e «Baskin» sono marchi registrati rispettivamente da Ente
 > Italiano Sport Inclusivi e Associazione Baskin.
@@ -71,11 +70,11 @@ Il Tabellone Baskin esiste in **due repository**, che lavorano insieme:
 - **Sirena** e **fischietto** restano disponibili anche qui.
 
 **Impostazioni partita** (dal menu `…`)
-- **Preset disciplina**: pulsanti **Baskin** e **Basket FIBA** che reimpostano tutti i campi ai valori della rispettiva disciplina (poi **Salva**). Sotto, la sezione **Personalizzate** consente di modificare ogni singolo campo.
-- **Logica timeout**: *Baskin* (1 per quarto, riporto all'indietro entro la metà) oppure *Basket FIBA* (2 nel 1° tempo, 3 nel 2°, max 2 negli ultimi 2′; 1 per supplementare).
+- **Modalità**: pulsanti **Baskin** (reimposta tutti i campi ai valori Baskin, poi **Salva**) e **Personalizza** (abilita la modifica di ogni singolo campo).
+- **Logica timeout** (in Personalizza): *Baskin* (1 per quarto, riporto all'indietro entro la metà) oppure *Basket* (2 nel 1° tempo, 3 nel 2°, max 2 negli ultimi 2′; 1 per supplementare).
 - **Modalità bonus**: *Ultimi 2′ (Baskin)* — entrambe le squadre negli ultimi 2′ di 4°/supplementari; *Dopo N falli (Basket)* — per squadra, si accende al raggiungimento della soglia (default 4) **alla ripartenza del cronometro**, resta acceso fino a fine periodo; *Nessuno*.
-- **Conteggio falli** on/off (default off Baskin, on Basket).
-- **Frecce possesso alternato** on/off (default off Baskin, on Basket).
+- **Conteggio falli** on/off (default off Baskin).
+- **Frecce possesso alternato** on/off (impostazione in Personalizza, default off).
 - Durata periodo, numero di periodi, **durata dei supplementari**, timeout per tempo/supplementare (Baskin), soglia falli per il bonus.
 - Azzeramento automatico dei falli a ogni periodo (on/off), sirena automatica a fine tempo (on/off).
 - **Streaming BaskinCam**: invio automatico dello stato partita a un dispositivo companion sulla rete locale (vedi sezione dedicata). Checkbox *Attiva invio* (default OFF) e campo *IP:porta*.
@@ -140,6 +139,7 @@ baskin-tabellone/
 - **Colori**: variabili `--green`, `--red`, `--yellow` in `pwa/css/styles.css`.
 - **Valori predefiniti** (minuti, periodi, timeout, bonus): oggetto `DEFAULT_CONFIG` in `pwa/js/app.js`.
 - **Aggiornamenti**: a ogni rilascio incrementa `CACHE_NAME` in `pwa/service-worker.js` (e la versione in `app.js`/manifest). Se aperta nel browser normale (non installata) si aggiorna da sola al ricaricamento; se installata come PWA non si aggiorna automaticamente (per non interrompere una partita in corso) e l'utente verifica da "Verifica aggiornamenti" nelle impostazioni, disinstallando e reinstallando l'app se ne trova una nuova.
+- **Compatibilità browser datati**: il layout usa `clamp()` per le dimensioni. Ogni dichiarazione ha un fallback fisso che la precede, così su motori privi di `clamp()` (Chrome < 79, WebView di sistema su Android 8/9) l'app resta usabile invece di mostrare loghi/icone a dimensione intrinseca. Mantenere questo schema (valore fisso prima, `clamp()` dopo) quando si aggiunge nuovo CSS dimensionale. Nota: su Chrome < 84 la spaziatura `gap` nei flexbox non è supportata, quindi alcuni elementi possono risultare più ravvicinati (degradazione solo estetica).
 
 ---
 
@@ -221,14 +221,14 @@ Come leggerlo lato BaskinCam:
 - `bonusActive` è già calcolato dalla PWA: in **Baskin** (`bonusMode:"last2"`)
   scatta per entrambe le squadre negli ultimi 2' di 4° quarto/supplementari,
   senza dipendere dai falli (qui infatti `fouls` è `[0,0]` con `manualFouls:false`);
-  in **Basket FIBA** (`bonusMode:"teamFouls"`) è invece per-squadra in base ai
+  in **Basket** (`bonusMode:"teamFouls"`) è invece per-squadra in base ai
   falli. Il ricevente può usare `bonusActive` così com'è.
-- `config.timeoutMode` (`baskin`/`fiba`) e `bonusMode` (`last2`/`teamFouls`/`off`)
+- `config.timeoutMode` (`baskin`/`basket`) e `bonusMode` (`last2`/`teamFouls`/`off`)
   indicano come rendere timeout e bonus; `manualFouls`, `possession`,
   `scoreTeamColor` riflettono le opzioni attive.
 
 Stesso momento di partita — **4° quarto a 1'47" dalla fine**, cronometro in
-corsa — ma in **Basket FIBA** (squadra 1 in bonus per aver raggiunto i falli di
+corsa — ma in **Basket** (squadra 1 in bonus per aver raggiunto i falli di
 squadra, non per il tempo residuo):
 
 ```json
@@ -245,7 +245,7 @@ squadra, non per il tempo residuo):
   "colors": ["#ff2b2b", "#1e6ee6"],
   "config": {
     "periodsRegular": 4,
-    "timeoutMode": "fiba",
+    "timeoutMode": "basket",
     "timeoutsPerHalf": 2,
     "timeoutsOvertime": 1,
     "bonusMode": "teamFouls",
@@ -258,11 +258,13 @@ squadra, non per il tempo residuo):
 ```
 
 Gli **switch che cambiano** tra i due esempi (a parità di struttura del
-payload) sono tutti dentro `config`, coerenti con il preset di disciplina:
+payload) sono tutti dentro `config`. Il secondo esempio corrisponde a una
+configurazione personalizzata in stile basket (logica timeout *Basket*, bonus
+per falli di squadra, possesso attivo):
 
-| Campo             | Baskin       | Basket FIBA    |
+| Campo             | Baskin       | Basket    |
 |-------------------|--------------|----------------|
-| `timeoutMode`     | `"baskin"`   | `"fiba"`       |
+| `timeoutMode`     | `"baskin"`   | `"basket"`       |
 | `bonusMode`        | `"last2"`    | `"teamFouls"`  |
 | `bonus`            | `5`          | `4`            |
 | `manualFouls`      | `false`      | `true`         |
@@ -270,10 +272,10 @@ payload) sono tutti dentro `config`, coerenti con il preset di disciplina:
 
 Di conseguenza cambia anche il **significato** dei campi fuori da `config`:
 - `fouls` è `[0,0]` nell'esempio Baskin perché lì il conteggio falli è
-  disattivato (`manualFouls:false`); in FIBA invece è attivo e alimenta
+  disattivato (`manualFouls:false`); in Basket invece è attivo e alimenta
   `bonusActive` tramite `bonusMode:"teamFouls"`.
 - `possession` è sempre presente nell'array, ma ha senso operativo solo se
-  `config.possession` è `true` (FIBA); in Baskin resta `[false,false]`.
+  `config.possession` è `true` (Basket); in Baskin resta `[false,false]`.
 
 ---
 
@@ -282,7 +284,7 @@ Di conseguenza cambia anche il **significato** dei campi fuori da `config`:
 - **Tempi** → quarti da **8 minuti**, **4 periodi**, tempi supplementari da **4 minuti** (siglati da `1TS` a `9TS`).
 - **Decimi di secondo** → negli ultimi **60 secondi** di ogni periodo o supplementare il cronometro passa al formato `SS:d` (regolamento FIBA), con gli stessi due punti dei minuti.
 - **Bonus Baskin (ultimi 2′)** → si accende per **entrambe** le squadre quando il cronometro del **4° quarto** o di un **supplementare** smette di mostrare **2:00** (cioè appare **1:59**): a 2:00 niente bonus. Indicato dai **pallini** che si accendono e lampeggiano. Disattivabile da Impostazioni.
-- **Timeout** → in operativa si assegnano **solo a cronometro fermo** (a crono in movimento un tap mostra *"Cronometro in movimento"*, senza fischio). **Baskin**: 1 per quarto (Q1/Q3), monte condiviso di 2 nei quarti 2 e 4; **Basket FIBA**: 2 nel 1° tempo, 3 nel 2° (max 2 negli ultimi 2′), 1 per supplementare. Un tap quando non ci sono timeout disponibili viene segnalato con **fischio** e avviso *"Timeout non disponibile"*. La correzione/azzeramento si fa nelle impostazioni.
+- **Timeout** → in operativa si assegnano **solo a cronometro fermo** (a crono in movimento un tap mostra *"Cronometro in movimento"*, senza fischio). **Baskin**: 1 per quarto (Q1/Q3), monte condiviso di 2 nei quarti 2 e 4; **Basket**: 2 nel 1° tempo, 3 nel 2° (max 2 negli ultimi 2′), 1 per supplementare. Un tap quando non ci sono timeout disponibili viene segnalato con **fischio** e avviso *"Timeout non disponibile"*. La correzione/azzeramento si fa nelle impostazioni.
 - **Periodo** → mostrato con cifra a **LED bianca** (alta il 75% del cronometro) e due spie: **°** (quarti ordinari) o **TS** (supplementari); se ne accende una sola.
 - **Suoni** → sirena e fischietto sono file audio originali (sintetizzati, rilasciati come **CC0**) inclusi in `sounds/`; la sirena suona **automaticamente a fine quarto** oltre che con il pulsante. Se i file non fossero disponibili, un sintetizzatore WebAudio fa da riserva.
 
@@ -298,4 +300,4 @@ Dal menu **…** dell'app è disponibile il link diretto al **repository GitHub*
 ---
 
 **Autore:** Daniele Lolli (UncleDan)  
-**Versione:** 1.16.5
+**Versione:** 1.17.0

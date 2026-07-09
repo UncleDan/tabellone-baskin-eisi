@@ -206,7 +206,7 @@
       <h2>Informazioni</h2>
       <div class="about">
         <p class="about-title">Tabellone Baskin</p>
-        <p class="about-meta">Versione <span id="aboutVersion">1.16.5</span> — Daniele Lolli (UncleDan)</p>
+        <p class="about-meta">Versione <span id="aboutVersion">1.17.0</span> — Daniele Lolli (UncleDan)</p>
       </div>
       <!-- verdi: installazione / aggiornamenti / sorgenti -->
       <button class="sheet-item green" id="actInstall" type="button" hidden>Installa app</button>
@@ -248,10 +248,9 @@
     <div class="sheet" role="dialog" aria-label="Impostazioni partita">
       <h2>Impostazioni partita</h2>
 
-      <!-- Modalità: Baskin / Basket FIBA / Personalizza -->
-      <div class="sheet-row sheet-row-3">
+      <!-- Modalità: Baskin / Personalizza -->
+      <div class="sheet-row sheet-row-2">
         <button class="sheet-item green" id="presetBaskin" type="button">Baskin</button>
-        <button class="sheet-item green" id="presetBasket" type="button">Basket FIBA</button>
         <button class="sheet-item green" id="presetCustom" type="button">Personalizza</button>
       </div>
 
@@ -278,6 +277,13 @@
       <label class="field">
         <span>Timeout per supplementare</span>
         <input type="number" id="cfgTimeoutsOt" min="0" max="9" inputmode="numeric" />
+      </label>
+      <label class="field">
+        <span>Logica timeout</span>
+        <select id="cfgTimeoutMode">
+          <option value="baskin">Baskin (riporto all'indietro)</option>
+          <option value="basket">Basket (monte per tempo)</option>
+        </select>
       </label>
       <label class="field">
         <span>Modalità bonus</span>

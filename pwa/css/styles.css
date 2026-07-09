@@ -12,7 +12,7 @@
   --dimseg: 0.07;     /* opacità dei segmenti spenti del display LED */
   --dash: #ffffff;    /* bordo tratteggiato in modalità impostazioni */
   --bonus-off:#5a1212; /* freccia bonus spenta */
-  --gap: clamp(6px, 1.2vw, 18px);
+--gap: 6px; --gap: clamp(6px, 1.2vw, 18px);
   --radius: 16px;
   font-size: 16px;
 }
@@ -42,8 +42,8 @@ body.mode-edit .only-game{ display:none !important; }
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: clamp(8px, 1.6vh, 22px) clamp(10px, 2vw, 34px);
-  gap: clamp(4px, 1vh, 14px);
+padding: 8px 10px; padding: clamp(8px, 1.6vh, 22px) clamp(10px, 2vw, 34px);
+gap: 4px; gap: clamp(4px, 1vh, 14px);
 }
 
 /* =====================================================================
@@ -60,15 +60,15 @@ body.mode-edit .only-game{ display:none !important; }
 .topbar-actions{ justify-self: end; display:flex; align-items:center; gap: var(--gap); }
 /* timer + periodo come gruppo centrale; il periodo è vicino al crono
    (circa 0,75 della larghezza di una cifra ≈ 0,42 della sua altezza) */
-.clock-period{ justify-self: center; display:flex; align-items:center; gap: clamp(30px, 8vh, 84px); }
+.clock-period{ justify-self: center; display:flex; align-items:center;gap: 30px; gap: clamp(30px, 8vh, 84px); }
 
 #btnNext{ display:none; }
 body.mode-game.end-of-period #btnNext{ display:grid; }
 
 .icon-btn{
   flex: 0 0 auto;
-  width: clamp(46px, 8.5vh, 96px);
-  height: clamp(46px, 8.5vh, 96px);
+width: 46px; width: clamp(46px, 8.5vh, 96px);
+height: 46px; height: clamp(46px, 8.5vh, 96px);
   padding: 0; margin: 0; border: 0; background: transparent;
   cursor: pointer;
   display: grid; place-items: center;
@@ -89,13 +89,13 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
 .period{
   display: flex;
   align-items: center;
-  gap: clamp(4px, 1vh, 12px);
+gap: 4px; gap: clamp(4px, 1vh, 12px);
   padding: .05em .25em;
   line-height: 1;
 }
 .period-num{ color: #fff; display:flex; }
 /* la cifra del periodo è alta il 75% di quella del cronometro */
-.period-num .seg-digit{ height: clamp(57px, 15vh, 155px); }
+.period-num .seg-digit{height: 57px; height: clamp(57px, 15vh, 155px); }
 .period-num .seg{ fill: currentColor; }
 .period-num .seg.off{ opacity: var(--dimseg); }
 
@@ -104,12 +104,12 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(3px, 0.8vh, 9px);
+gap: 3px; gap: clamp(3px, 0.8vh, 9px);
 }
-.ind-deg{ height: clamp(18px, 5vh, 48px); width:auto; color:#fff; opacity: var(--dimseg); }
+.ind-deg{height: 18px; height: clamp(18px, 5vh, 48px); width:auto; color:#fff; opacity: var(--dimseg); }
 .ind-ts{
   font-weight: 900;
-  font-size: clamp(14px, 4vh, 40px);
+font-size: 14px; font-size: clamp(14px, 4vh, 40px);
   letter-spacing: .02em;
   color: var(--red);
   opacity: var(--dimseg);
@@ -133,17 +133,17 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
 .side-buttons{
   display: flex;
   flex-direction: column;
-  gap: clamp(6px, 1.6vh, 20px);
+gap: 6px; gap: clamp(6px, 1.6vh, 20px);
 }
 .pts-btn{
-  width: clamp(48px, 9vh, 104px);
-  height: clamp(48px, 9vh, 104px);
+width: 48px; width: clamp(48px, 9vh, 104px);
+height: 48px; height: clamp(48px, 9vh, 104px);
   border-radius: 50%;
   border: 0;
   background: var(--white);
   color: #000;
   font-weight: 800;
-  font-size: clamp(18px, 3.4vh, 40px);
+font-size: 18px; font-size: clamp(18px, 3.4vh, 40px);
   cursor: pointer;
   transition: transform .05s ease, background .1s ease;
 }
@@ -158,11 +158,11 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
   align-items: center;
   justify-content: center;
   min-width: 0;
-  gap: clamp(4px, 1.2vh, 16px);
+gap: 4px; gap: clamp(4px, 1.2vh, 16px);
 }
 .team-name{
   font-weight: 800;
-  font-size: clamp(33px, 9vh, 96px);
+font-size: 33px; font-size: clamp(33px, 9vh, 96px);
   line-height: 1.2;
   text-align: center;
   padding: .05em .4em .12em;
@@ -176,32 +176,32 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
 .score{ color: var(--green); }
 /* alone bianco per punteggi con colore scuro (leggibilità su fondo nero) */
 .score.outline-svg{ filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff); }
-.score .seg-digit{ height: clamp(96px, 34vh, 340px); }
+.score .seg-digit{height: 96px; height: clamp(96px, 34vh, 340px); }
 .foul-num{ color: var(--yellow); }
-.foul-num .seg-digit{ height: clamp(40px, 12vh, 120px); }
+.foul-num .seg-digit{height: 40px; height: clamp(40px, 12vh, 120px); }
 .timer{ color: var(--red); display:flex; align-items:center; }
-.timer .seg-digit{ height: clamp(76px, 20vh, 207px); }
+.timer .seg-digit{height: 76px; height: clamp(76px, 20vh, 207px); }
 
 .score, .foul-num, .timer{ display:flex; align-items:center; justify-content:center; gap:.12em; }
 .seg-digit{ display:block; width:auto; }
 .seg-digit .seg{ fill: currentColor; }
 .seg-digit .seg.off{ opacity: var(--dimseg); }
-.seg-colon{ height: clamp(76px, 20vh, 207px); width:auto; color: var(--red); }
+.seg-colon{height: 76px; height: clamp(76px, 20vh, 207px); width:auto; color: var(--red); }
 .seg-colon .dot{ fill: currentColor; }
 
 /* timeout */
 .timeouts{
   display: inline-flex;
   align-items: center;
-  gap: clamp(5px, 1.1vh, 12px);
+gap: 5px; gap: clamp(5px, 1.1vh, 12px);
   border: 3px solid var(--white);
   border-radius: 999px;
-  padding: clamp(4px,1vh,9px) clamp(8px,1.6vh,16px);
+padding: 4px 8px; padding: clamp(4px,1vh,9px) clamp(8px,1.6vh,16px);
   cursor: pointer;
 }
 .to-dot{
-  width: clamp(10px, 2.1vh, 22px);
-  height: clamp(10px, 2.1vh, 22px);
+width: 10px; width: clamp(10px, 2.1vh, 22px);
+height: 10px; height: clamp(10px, 2.1vh, 22px);
   border-radius: 50%;
   background: transparent;
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.4);  /* spento: anello tenue */
@@ -219,7 +219,7 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
 
 /* X centrale */
 .vs{ display:grid; place-items:center; }
-.vs svg{ height: clamp(60px, 18vh, 170px); width:auto; }
+.vs svg{height: 60px; height: clamp(60px, 18vh, 170px); width:auto; }
 
 /* =====================================================================
    FALLI / BONUS
@@ -229,15 +229,15 @@ body.mode-edit #btnPlay{ opacity:.35; pointer-events:none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: clamp(2px, .8vh, 10px);
-  padding-bottom: clamp(2px,1vh,12px);
+gap: 2px; gap: clamp(2px, .8vh, 10px);
+padding-bottom: 2px; padding-bottom: clamp(2px,1vh,12px);
 }
-.fouls-head{ display:flex; align-items:center; gap: clamp(10px,2.4vw,28px); }
-.fouls-label{ font-weight: 800; font-size: clamp(20px, 4.6vh, 46px); }
+.fouls-head{ display:flex; align-items:center;gap: 10px; gap: clamp(10px,2.4vw,28px); }
+.fouls-label{ font-weight: 800;font-size: 20px; font-size: clamp(20px, 4.6vh, 46px); }
 /* bonus a pallini (uno per squadra): spento = anello tenue, acceso = rosso pieno */
 .bonus-dot{
-  width: clamp(16px, 3.4vh, 34px);
-  height: clamp(16px, 3.4vh, 34px);
+width: 16px; width: clamp(16px, 3.4vh, 34px);
+height: 16px; height: clamp(16px, 3.4vh, 34px);
   border-radius: 50%;
   background: transparent;
   box-shadow: inset 0 0 0 3px var(--bonus-off);
@@ -264,14 +264,14 @@ body.auto-bonus .bonus-dot.active{ animation: bonusPulse 1s ease-in-out infinite
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: clamp(10px, 2.4vw, 28px);
-  padding-top: clamp(2px, .8vh, 10px);
+gap: 10px; gap: clamp(10px, 2.4vw, 28px);
+padding-top: 2px; padding-top: clamp(2px, .8vh, 10px);
 }
 .possession[hidden]{ display:none; }
-.poss-label{ font-weight: 800; font-size: clamp(15px, 3.4vh, 32px); letter-spacing:.02em; }
+.poss-label{ font-weight: 800;font-size: 15px; font-size: clamp(15px, 3.4vh, 32px); letter-spacing:.02em; }
 .poss-arrow{
   color: var(--bonus-off);
-  font-size: clamp(20px, 4.6vh, 44px);
+font-size: 20px; font-size: clamp(20px, 4.6vh, 44px);
   line-height: 1;
   cursor: pointer;
   user-select: none;
@@ -279,38 +279,38 @@ body.auto-bonus .bonus-dot.active{ animation: bonusPulse 1s ease-in-out infinite
 }
 .poss-arrow.active{ color: var(--green); text-shadow: 0 0 10px rgba(30,230,58,.7); }
 
-.fouls-body{ display:flex; align-items:center; gap: clamp(8px,1.8vw,22px); }
+.fouls-body{ display:flex; align-items:center;gap: 8px; gap: clamp(8px,1.8vw,22px); }
 /* contatori e tasti falli visibili solo col conteggio falli attivo */
 body:not(.manual-fouls) .fouls-body{ display:none; }
 .foul-btn{
-  width: clamp(40px, 7.5vh, 84px);
-  height: clamp(40px, 7.5vh, 84px);
+width: 40px; width: clamp(40px, 7.5vh, 84px);
+height: 40px; height: clamp(40px, 7.5vh, 84px);
   border-radius: 50%;
   border: 0;
   background: var(--white);
   color: #000;
   font-weight: 800;
-  font-size: clamp(20px, 3.6vh, 44px);
+font-size: 20px; font-size: clamp(20px, 3.6vh, 44px);
   line-height: 1;
   cursor: pointer;
   transition: transform .05s ease;
 }
 .foul-btn:active{ transform: scale(.9); }
-.foul-x svg{ height: clamp(34px, 8vh, 78px); width:auto; }
+.foul-x svg{height: 34px; height: clamp(34px, 8vh, 78px); width:auto; }
 
 /* =====================================================================
    AZIONI ANGOLO (sirena / muto)
    ===================================================================== */
 .corner-actions{
   position: absolute;
-  right: clamp(10px, 2vw, 34px);
-  bottom: clamp(8px, 1.6vh, 22px);
+right: 10px; right: clamp(10px, 2vw, 34px);
+bottom: 8px; bottom: clamp(8px, 1.6vh, 22px);
   display: flex;
   gap: var(--gap);
 }
 .corner-actions.left{
   right: auto;
-  left: clamp(10px, 2vw, 34px);
+left: 10px; left: clamp(10px, 2vw, 34px);
 }
 /* pulsante pericoloso (reset) */
 .icon-btn.danger circle{ fill:#ff5a5a; }
@@ -332,7 +332,7 @@ body.mode-edit .team-name.editable{ outline: none; }
   display: none;
   font: inherit;
   font-weight: 800;
-  font-size: clamp(33px, 9vh, 96px);
+font-size: 33px; font-size: clamp(33px, 9vh, 96px);
   text-align: center;
   background: transparent;
   color: var(--white);
@@ -355,13 +355,13 @@ body.mode-edit .team-name-input{ display:block; }
   display: none;
   justify-content: center;
   flex-wrap: wrap;
-  gap: clamp(6px, 1.4vh, 12px);
-  margin-top: clamp(6px, 1.2vh, 14px);
+gap: 6px; gap: clamp(6px, 1.4vh, 12px);
+margin-top: 6px; margin-top: clamp(6px, 1.2vh, 14px);
 }
 body.mode-edit .color-row{ display: flex; }
 .swatch{
-  width: clamp(26px, 4.4vh, 40px);
-  height: clamp(26px, 4.4vh, 40px);
+width: 26px; width: clamp(26px, 4.4vh, 40px);
+height: 26px; height: clamp(26px, 4.4vh, 40px);
   padding: 0;
   border-radius: 50%;
   border: 2px solid rgba(255,255,255,.45);
@@ -383,7 +383,7 @@ body.mode-edit .color-row{ display: flex; }
    FOGLI MODALI (menu, impostazioni, editor tempo)
    ===================================================================== */
 .sheet-backdrop{
-  position: fixed; inset:0;
+  position: fixed; top:0; right:0; bottom:0; left:0;
   background: rgba(0,0,0,.72);
   display: grid; place-items: center;
   z-index: 50;
@@ -394,7 +394,7 @@ body.mode-edit .color-row{ display: flex; }
   background:#141414;
   border:1px solid #2c2c2c;
   border-radius: 18px;
-  width: min(480px, 94vw);
+  width: 480px; max-width: 94vw;
   max-height: 92vh;
   overflow:auto;
   padding: 20px;
@@ -447,7 +447,7 @@ a.sheet-link{ display:block; text-decoration:none; }
   pointer-events:none;
 }
 .rotor{
-  width: clamp(64px, 16vw, 96px);
+width: 64px; width: clamp(64px, 16vw, 96px);
   height: 132px;                 /* 3 slot da 44px */
   overflow-y: scroll;
   scroll-snap-type: y mandatory;
@@ -459,7 +459,7 @@ a.sheet-link{ display:block; text-decoration:none; }
   overscroll-behavior: contain;
   touch-action: pan-y;
 }
-.rotor.wide{ width: clamp(96px, 26vw, 150px); }
+.rotor.wide{width: 96px; width: clamp(96px, 26vw, 150px); }
 .rotor::-webkit-scrollbar{ display:none; }
 .rotor-item{
   height:44px;
@@ -490,7 +490,7 @@ a.sheet-link{ display:block; text-decoration:none; }
 @media (orientation: portrait) and (max-width: 560px){
   .board::after{
     content: "Ruota il dispositivo in orizzontale per la vista completa";
-    position: absolute; inset: auto 8px 8px; text-align:center;
+    position: absolute; top:auto; right:8px; bottom:8px; left:8px; text-align:center;
     color:#888; font-size:13px;
   }
 }
@@ -504,12 +504,12 @@ a.sheet-link{ display:block; text-decoration:none; }
   #rotateNotice{
     display: flex;
     position: fixed;
-    inset: 0;
+    top:0; right:0; bottom:0; left:0;
     z-index: 9999;                 /* sopra fogli modali e toast */
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: clamp(14px, 3vh, 26px);
+gap: 14px; gap: clamp(14px, 3vh, 26px);
     background: #000;
     color: #fff;
     text-align: center;
@@ -522,7 +522,7 @@ a.sheet-link{ display:block; text-decoration:none; }
 }
 
 .rotate-ico{
-  width: clamp(110px, 38vw, 200px);
+width: 110px; width: clamp(110px, 38vw, 200px);
   height: auto;
   animation: rotateHint 2.4s ease-in-out infinite;
   transform-origin: 50% 50%;
@@ -534,18 +534,18 @@ a.sheet-link{ display:block; text-decoration:none; }
 .rotate-title{
   margin: 0;
   font-weight: 800;
-  font-size: clamp(22px, 6vw, 34px);
+font-size: 22px; font-size: clamp(22px, 6vw, 34px);
 }
 .rotate-sub{
   margin: 0;
   font-weight: 600;
   color: #bdbdbd;
-  font-size: clamp(14px, 4vw, 19px);
+font-size: 14px; font-size: clamp(14px, 4vw, 19px);
 }
 .rotate-install{
-  margin-top: clamp(8px, 2vh, 18px);
-  padding: clamp(10px,2.4vh,16px) clamp(20px,6vw,34px);
-  font-size: clamp(15px, 4.4vw, 20px);
+margin-top: 8px; margin-top: clamp(8px, 2vh, 18px);
+padding: 10px 20px; padding: clamp(10px,2.4vh,16px) clamp(20px,6vw,34px);
+font-size: 15px; font-size: clamp(15px, 4.4vw, 20px);
   font-weight: 800;
   color: #fff;
   background: #2e9e4f;
@@ -601,29 +601,18 @@ body.display-only #name2{
    ===================================================================== */
 .fouls-head{ align-items: flex-end; }   /* tutto allineato in basso, loghi inclusi */
 .brand-logo{
-  height: clamp(60px, 12vh, 123px);      /* +150% rispetto a prima */
+height: 60px; height: clamp(60px, 12vh, 123px);      /* +150% rispetto a prima */
   width: auto;
   display: block;
   pointer-events: none;                  /* mai un ostacolo al tocco */
   align-self: flex-end;                  /* base allineata alla riga falli */
 }
 /* EISI: versione trasparente, colori originali del logo */
-.brand-logo-eisi{ margin-right: clamp(4px, 1vw, 14px); }
+.brand-logo-eisi{margin-right: 4px; margin-right: clamp(4px, 1vw, 14px); }
 /* Baskin: versione negativa già pronta (nessun filtro applicato) */
-.brand-logo-baskin{ margin-left: clamp(4px, 1vw, 14px); }
-/* in modalità impostazioni i loghi si tolgono per non affollare i comandi di modifica */
-body.mode-edit .brand-logo{ display:none; }
-/* su schermi molto bassi (landscape stretto) i loghi si nascondono */
-@media (max-height: 340px){
-  .brand-logo{ display:none; }
-}
-
-/* =====================================================================
-   LOGHI: visibilità e impostazioni (modalità Baskin/FIBA/Personalizza)
-   ===================================================================== */
-/* i loghi si nascondono quando non sono ammessi (governato dal JS: solo
-   con DEFAULT_SHOW_LOGOS true e preset Baskin) */
-body.hide-logos .brand-logo{ display: none !important; }
+.brand-logo-baskin{margin-left: 4px; margin-left: clamp(4px, 1vw, 14px); }
+/* I loghi EISI e Baskin sono fissi e sempre visibili in ogni modalità e
+   dimensione di schermo: non esiste alcun meccanismo per nasconderli. */
 
 /* i tre pulsanti modalità stanno su una riga (con wrap se serve) */
 .sheet-row-3 > *{ flex: 1 1 92px; }
@@ -633,7 +622,7 @@ body.hide-logos .brand-logo{ display: none !important; }
   outline-offset: -3px;
   filter: brightness(1.05);
 }
-/* campi di gara bloccati (modalità Baskin/FIBA): visibili ma non modificabili */
+/* campi di gara bloccati (modalità Baskin): visibili ma non modificabili */
 #disciplineFields.fields-locked{ opacity: .55; }
 #disciplineFields.fields-locked .field{ cursor: default; }
 
@@ -643,3 +632,36 @@ body.hide-logos .brand-logo{ display: none !important; }
   color: #9a9a9a;
   margin-top: 0.6em;
 }
+
+/* =====================================================================
+   FALLBACK SPAZIATURA FLEX (compatibilità motori senza gap nei flexbox:
+   Chrome < 84, System WebView su Android 8/9).
+   Attivo SOLO quando app.js rileva la mancanza del supporto e aggiunge
+   body.no-flex-gap. I browser moderni non sono influenzati.
+   Tecnica "lobotomized owl": margine su ogni figlio tranne il primo.
+   ===================================================================== */
+/* --- contenitori in riga (margin-left) --- */
+body.no-flex-gap .clock-controls > * + *,
+body.no-flex-gap .topbar-actions > * + *,
+body.no-flex-gap .corner-actions  > * + *{ margin-left: var(--gap); }
+body.no-flex-gap .clock-period > * + *{ margin-left: 30px; }
+body.no-flex-gap .period       > * + *{ margin-left: 4px; }
+body.no-flex-gap .score        > * + *,
+body.no-flex-gap .foul-num     > * + *,
+body.no-flex-gap .timer        > * + *{ margin-left: .12em; }
+body.no-flex-gap .timeouts     > * + *{ margin-left: 5px; }
+body.no-flex-gap .fouls-head   > * + *,
+body.no-flex-gap .possession   > * + *,
+body.no-flex-gap .sheet-row    > * + *{ margin-left: 10px; }
+body.no-flex-gap .fouls-body   > * + *{ margin-left: 8px; }
+body.no-flex-gap .field        > * + *{ margin-left: 12px; }
+body.no-flex-gap .rotors       > * + *{ margin-left: 14px; }
+/* --- contenitori in colonna (margin-top) --- */
+body.no-flex-gap .board        > * + *,
+body.no-flex-gap .team         > * + *{ margin-top: 4px; }
+body.no-flex-gap .period-ind   > * + *{ margin-top: 3px; }
+body.no-flex-gap .side-buttons > * + *,
+body.no-flex-gap .rotor-wrap   > * + *{ margin-top: 6px; }
+body.no-flex-gap .fouls        > * + *{ margin-top: 2px; }
+body.no-flex-gap .sheet        > * + *{ margin-top: 12px; }
+body.no-flex-gap #rotateNotice > * + *{ margin-top: 14px; }

@@ -5,7 +5,7 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.16.5';
+const APP_VERSION = '1.17.0';
 const STORE_KEY = 'baskin-tabellone-v1';
 
 /* Modalità "sola visualizzazione": attivata con ?display=1 nell'URL.
@@ -25,14 +25,13 @@ const REPO_URL = 'https://github.com/UncleDan/baskin-tabellone';
    L'utente NON ha un interruttore per i loghi: compaiono soltanto se
    questa costante è true E il preset corrente è "baskin".
    ===================================================================== */
-const DEFAULT_SHOW_LOGOS = true;
 
 /* ---------- Configurazione predefinita (modificabile da Impostazioni) ---------- */
 const DEFAULT_CONFIG = {
   minutes: 8,            // durata di un periodo regolamentare (quarto)
   overtimeMinutes: 4,    // durata di un tempo supplementare
   periods: 4,            // numero di periodi regolamentari
-  timeoutMode: 'baskin', // logica timeout: 'baskin' (riporto all'indietro) o 'fiba'
+  timeoutMode: 'baskin', // logica timeout: 'baskin' (riporto all'indietro) o 'basket'
   timeoutsPerHalf: 2,    // timeout per squadra in ciascun tempo (meta' gara): 1 per quarto, riportabili nella coppia di quarti
   timeoutsOvertime: 1,   // timeout per squadra in ogni supplementare
   bonusMode: 'last2',    // 'last2' (Baskin: ultimi 2'), 'teamFouls' (Basket: dopo N falli), 'off'
@@ -44,21 +43,15 @@ const DEFAULT_CONFIG = {
   autoHorn: true,
   baskinCamEnabled: false, // streaming stato verso dispositivo companion BaskinCam
   baskinCamHost: '',       // IP:porta del BaskinCam (es. 192.168.1.50:8080), vuoto = disattivo
-  configMode: 'baskin'     // preset attivo: 'baskin' | 'fiba' | 'custom' (governa campi e loghi)
+  configMode: 'baskin'     // preset attivo: 'baskin' | 'custom' (governa i campi modificabili)
 };
 
-/* Preset di disciplina: i pulsanti "Baskin"/"Basket FIBA" reimpostano i campi
-   di gara a questi valori (le opzioni personali come scoreTeamColor non cambiano). */
+/* Preset di disciplina: il pulsante "Baskin" reimposta i campi di gara a questi
+   valori (le opzioni personali come scoreTeamColor non cambiano). */
 const PRESET_BASKIN = {
   minutes: 8, overtimeMinutes: 4, periods: 4,
   timeoutMode: 'baskin', timeoutsPerHalf: 2, timeoutsOvertime: 1,
   bonusMode: 'last2', bonus: 5, manualFouls: false, possession: false,
-  resetFoulsEachPeriod: true, autoHorn: true
-};
-const PRESET_BASKET_FIBA = {
-  minutes: 10, overtimeMinutes: 5, periods: 4,
-  timeoutMode: 'fiba', timeoutsPerHalf: 2, timeoutsOvertime: 1,
-  bonusMode: 'teamFouls', bonus: 4, manualFouls: true, possession: true,
   resetFoulsEachPeriod: true, autoHorn: true
 };
 
@@ -82,15 +75,15 @@ function phaseKey(period){
 }
 function timeoutPool(period){
   const c = state.config;
-  if(c.timeoutMode === 'fiba'){
+  if(c.timeoutMode === 'basket'){
     if(period > c.periods) return 1;                 // ogni supplementare: 1
     const half = Math.ceil(c.periods / 2);
-    return (period <= half) ? 2 : 3;                 // FIBA: 2 nel 1° tempo, 3 nel 2°
+    return (period <= half) ? 2 : 3;                 // Basket: 2 nel 1° tempo, 3 nel 2°
   }
   return (period > c.periods) ? c.timeoutsOvertime : c.timeoutsPerHalf;
 }
 
-/* Siamo negli ultimi 2 minuti dell'ultimo periodo regolamentare? (regola FIBA) */
+/* Siamo negli ultimi 2 minuti dell'ultimo periodo regolamentare? (regola Basket) */
 function inLastTwoMinutes(){
   return state.period === state.config.periods && state.remainingMs < 120000;
 }
@@ -108,7 +101,7 @@ function freshState(cfg){
     scores: [0, 0],
     fouls: [0, 0],
     timeoutsUsed: [0, 0],
-    timeoutsLate: [0, 0],    // FIBA: timeout usati negli ultimi 2' dell'ultimo periodo
+    timeoutsLate: [0, 0],    // Basket: timeout usati negli ultimi 2' dell'ultimo periodo
     bonusActive: [false, false],  // bonus per squadra (modalita' 'teamFouls')
     possession: [false, false],   // freccia possesso: [sinistra, destra]
     toPhase: 'h1',           // fase a cui si riferisce timeoutsUsed
@@ -135,16 +128,22 @@ function loadState(){
         s.config.baskinCamHost = s.config.baskinCamTarget;
       }
       delete s.config.baskinCamTarget;
-      // migrazione: configMode assente -> dedotto dai parametri salvati
+      // migrazione: valore legacy timeoutMode 'fiba' -> 'basket' (rinominato)
+      if(s.config.timeoutMode === 'fiba'){ s.config.timeoutMode = 'basket'; }
+      // migrazione: configMode assente -> dedotto dai parametri salvati.
+      // La vecchia disciplina "basket" (preset rimosso) ricade in "custom":
+      // la logica timeout basket resta disponibile tra le impostazioni personalizzate.
       if(!hadMode){
         const c = s.config;
         if(c.timeoutMode === 'baskin' && c.bonusMode === 'last2' && !c.manualFouls && !c.possession){
           c.configMode = 'baskin';
-        } else if(c.timeoutMode === 'fiba' && c.bonusMode === 'teamFouls'){
-          c.configMode = 'fiba';
         } else {
           c.configMode = 'custom';
         }
+      }
+      // configMode legacy 'basket' (o 'fiba') -> 'custom'
+      if(s.config.configMode !== 'baskin' && s.config.configMode !== 'custom'){
+        s.config.configMode = 'custom';
       }
       s.running = false;            // non si riprende mai "in corsa"
       if(!Array.isArray(s.names)) s.names = ['Squadra 1','Squadra 2'];
@@ -297,7 +296,6 @@ function applyDisplayState(data){
   if(elName && elName[1]) elName[1].value = state.names[1];
   applyFoulMode();
   applyScoreColors();
-  applyLogos();
   renderAll();
   if(state.running && state.remainingMs > 0) displayStartClock();
   else displayStopClock();
@@ -499,7 +497,7 @@ function mmss(ms){
   return [ pad2(Math.floor(t/60)), pad2(t%60) ];
 }
 
-/* Regolamento FIBA: negli ultimi 60 secondi di ogni periodo o supplementare
+/* Regolamento Basket: negli ultimi 60 secondi di ogni periodo o supplementare
    il cronometro mostra i decimi di secondo (SS.d invece di MM:SS). */
 function renderTimer(){
   const ms = Math.max(0, state.remainingMs);
@@ -583,7 +581,7 @@ function autoBonusActive(){
   return inFinalPhase && shownSeconds < 120;
 }
 
-/* Bonus "dopo N falli" (Basket/FIBA): per squadra, si accende quando i falli
+/* Bonus "dopo N falli" (Basket): per squadra, si accende quando i falli
    raggiungono la soglia, ma solo a cronometro avviato; resta acceso (latch)
    fino all'azzeramento dei falli (cambio periodo). */
 function updateTeamFoulBonus(){
@@ -639,12 +637,12 @@ function tapPossession(side){
 /* Numero massimo di pallini assegnabili "adesso" per la singola squadra.
    BASKIN: 1 nel primo quarto del tempo, monte pieno nel secondo (riporto
    all'indietro entro la stessa metà); ogni supplementare = timeoutsOvertime.
-   FIBA: monte pieno della metà (2 nel 1° tempo, 3 nel 2°), ma negli ultimi 2'
+   Basket: monte pieno della metà (2 nel 1° tempo, 3 nel 2°), ma negli ultimi 2'
    dell'ultimo periodo al massimo 2 timeout possono essere chiamati in quella
    finestra; ogni supplementare = 1. */
 function timeoutAssignableCap(period, team){
   const c = state.config;
-  if(c.timeoutMode === 'fiba'){
+  if(c.timeoutMode === 'basket'){
     const pool = timeoutPool(period);
     if(period > c.periods) return pool;              // supplementare: tutti (=1)
     const half = Math.ceil(c.periods / 2);
@@ -774,8 +772,8 @@ function tapTimeout(team){
     const cap = timeoutAssignableCap(state.period, team);
     if(state.timeoutsUsed[team] < cap){
       state.timeoutsUsed[team] += 1;
-      // FIBA: conta i timeout chiamati negli ultimi 2' (max 2 in quella finestra)
-      if(state.config.timeoutMode === 'fiba' && inLastTwoMinutes()){
+      // Basket: conta i timeout chiamati negli ultimi 2' (max 2 in quella finestra)
+      if(state.config.timeoutMode === 'basket' && inLastTwoMinutes()){
         if(!Array.isArray(state.timeoutsLate)) state.timeoutsLate = [0,0];
         state.timeoutsLate[team] += 1;
       }
@@ -1051,37 +1049,29 @@ function applyPeriodEditor(){
 
 /* --- impostazioni partita --- */
 let pendingTimeoutMode = 'baskin';
-let pendingMode = 'baskin';   // modalità selezionata nel form: 'baskin' | 'fiba' | 'custom'
+let pendingMode = 'baskin';   // modalità selezionata nel form: 'baskin' | 'custom'
 
 /* Campi "parametri di gara": abilitati SOLO in modalità Personalizza */
-const DISCIPLINE_FIELDS = ['#cfgMinutes','#cfgPeriods','#cfgOvertime','#cfgTimeoutsHalf','#cfgTimeoutsOt','#cfgBonusMode','#cfgBonus','#cfgFouls','#cfgResetFouls','#cfgPossession','#cfgAutoHorn'];
+const DISCIPLINE_FIELDS = ['#cfgMinutes','#cfgPeriods','#cfgOvertime','#cfgTimeoutsHalf','#cfgTimeoutsOt','#cfgTimeoutMode','#cfgBonusMode','#cfgBonus','#cfgFouls','#cfgResetFouls','#cfgPossession','#cfgAutoHorn'];
 
 function setDisciplineFieldsEnabled(enabled){
   DISCIPLINE_FIELDS.forEach(sel=>{ const el = $(sel); if(el) el.disabled = !enabled; });
   const box = $('#disciplineFields'); if(box) box.classList.toggle('fields-locked', !enabled);
 }
 function highlightModeButtons(){
-  [['#presetBaskin','baskin'],['#presetBasket','fiba'],['#presetCustom','custom']].forEach(([sel,m])=>{
+  [['#presetBaskin','baskin'],['#presetCustom','custom']].forEach(([sel,m])=>{
     const b = $(sel);
     if(b){ b.classList.toggle('is-active', pendingMode === m); b.setAttribute('aria-pressed', pendingMode === m ? 'true' : 'false'); }
   });
 }
 /* Imposta la modalità nel form (NON salva). refill=true ricarica i valori del
-   preset nei campi (per Baskin/FIBA); per Personalizza i valori restano quelli
-   già presenti (ultimi scelti) e i campi diventano modificabili. */
+   preset Baskin nei campi; per Personalizza i valori restano quelli già presenti
+   (ultimi scelti) e i campi diventano modificabili. */
 function setSettingsMode(mode, refill){
-  pendingMode = (mode === 'fiba' || mode === 'custom') ? mode : 'baskin';
+  pendingMode = (mode === 'custom') ? 'custom' : 'baskin';
   if(pendingMode === 'baskin' && refill){ fillSettingsForm({ ...state.config, ...PRESET_BASKIN }); }
-  else if(pendingMode === 'fiba' && refill){ fillSettingsForm({ ...state.config, ...PRESET_BASKET_FIBA }); }
   setDisciplineFieldsEnabled(pendingMode === 'custom');
   highlightModeButtons();
-}
-
-/* Applica la visibilità dei loghi: compaiono SOLO se DEFAULT_SHOW_LOGOS è true
-   E il preset attivo è Baskin. L'utente non ha un interruttore dedicato. */
-function applyLogos(){
-  const show = DEFAULT_SHOW_LOGOS && state.config.configMode === 'baskin';
-  document.body.classList.toggle('hide-logos', !show);
 }
 
 function fillSettingsForm(c){
@@ -1098,11 +1088,12 @@ function fillSettingsForm(c){
   $('#cfgAutoHorn').checked = !!c.autoHorn;
   $('#cfgBaskinCam').checked = !!c.baskinCamEnabled;
   $('#cfgBaskinCamHost').value = c.baskinCamHost || '';
-  pendingTimeoutMode = (c.timeoutMode === 'fiba') ? 'fiba' : 'baskin';
+  pendingTimeoutMode = (c.timeoutMode === 'basket') ? 'basket' : 'baskin';
+  $('#cfgTimeoutMode').value = pendingTimeoutMode;
 }
 function openSettings(){
   fillSettingsForm(state.config);
-  const mode = (state.config.configMode === 'fiba' || state.config.configMode === 'custom') ? state.config.configMode : 'baskin';
+  const mode = (state.config.configMode === 'custom') ? 'custom' : 'baskin';
   setSettingsMode(mode, false);   // riflette la modalità corrente senza sovrascrivere i valori reali
   openSheet('settingsBackdrop');
 }
@@ -1112,11 +1103,10 @@ function saveSettings(){
     if(isNaN(v)) v = def;
     return Math.min(max, Math.max(min, v));
   };
-  if(pendingMode === 'baskin' || pendingMode === 'fiba'){
-    // preset: i parametri di gara arrivano dal preset (campi disabilitati)
-    const preset = (pendingMode === 'fiba') ? PRESET_BASKET_FIBA : PRESET_BASKIN;
-    Object.assign(state.config, preset);
-    state.config.configMode = pendingMode;
+  if(pendingMode === 'baskin'){
+    // preset Baskin: i parametri di gara arrivano dal preset (campi disabilitati)
+    Object.assign(state.config, PRESET_BASKIN);
+    state.config.configMode = 'baskin';
   } else {
     // personalizza: legge i campi
     state.config.minutes  = num('#cfgMinutes', 8, 1, 60);
@@ -1131,7 +1121,8 @@ function saveSettings(){
     state.config.manualFouls = $('#cfgFouls').checked;
     state.config.possession = $('#cfgPossession').checked;
     state.config.autoHorn = $('#cfgAutoHorn').checked;
-    state.config.timeoutMode = (pendingTimeoutMode === 'fiba') ? 'fiba' : 'baskin';
+    const tm = $('#cfgTimeoutMode').value;
+    state.config.timeoutMode = (tm === 'basket') ? 'basket' : 'baskin';
     state.config.configMode = 'custom';
   }
   // Streaming BaskinCam: sempre dai campi (indipendente dalla disciplina)
@@ -1152,7 +1143,6 @@ function saveSettings(){
   closeSheet('settingsBackdrop');
   applyFoulMode();
   updateFoulLabel();
-  applyLogos();
   renderAll();
   saveState();
   toast('Impostazioni salvate');
@@ -1167,7 +1157,6 @@ function resetApp(){
   closeSheet('settingsBackdrop');
   applyFoulMode();
   updateFoulLabel();
-  applyLogos();
   renderAll();
   saveState();
   toast('Applicazione azzerata');
@@ -1439,7 +1428,6 @@ onActivate($('#rotateInstall'), doInstall);
 onActivate($('#settingsSave'), saveSettings);
 onActivate($('#settingsClose'), ()=> closeSheet('settingsBackdrop'));
 onActivate($('#presetBaskin'), ()=> setSettingsMode('baskin', true));
-onActivate($('#presetBasket'), ()=> setSettingsMode('fiba', true));
 onActivate($('#presetCustom'), ()=> setSettingsMode('custom', false));
 
 /* frecce possesso */
@@ -1491,12 +1479,28 @@ function isTyping(e){ const t=e.target; return t && (t.tagName==='INPUT'||t.tagN
    AVVIO
    ===================================================================== */
 renderAll();
-applyLogos();
 
 /* mostra la versione reale nel menu "Informazioni" (evita disallineamenti:
    basta aggiornare APP_VERSION in cima al file) */
 {
   const av = $('#aboutVersion'); if(av) av.textContent = APP_VERSION;
+}
+
+/* rileva se il motore supporta la spaziatura gap nei flexbox: i motori datati
+   (Chrome < 84, System WebView su Android 8/9) non la supportano. In assenza,
+   aggiunge body.no-flex-gap e il CSS applica una spaziatura equivalente a margini. */
+{
+  let gapOk = false;
+  try{
+    const t = document.createElement('div');
+    t.style.cssText = 'display:flex;flex-direction:column;row-gap:1px;position:absolute;visibility:hidden';
+    t.appendChild(document.createElement('div'));
+    t.appendChild(document.createElement('div'));
+    document.body.appendChild(t);
+    gapOk = (t.scrollHeight === 1);
+    document.body.removeChild(t);
+  }catch(_){}
+  if(!gapOk) document.body.classList.add('no-flex-gap');
 }
 
 /* modalità sola visualizzazione (?display=1): nasconde i comandi e si collega
