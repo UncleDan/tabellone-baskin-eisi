@@ -5,8 +5,8 @@
    ===================================================================== */
 'use strict';
 
-const APP_VERSION = '1.17.6';
-const STORE_KEY = 'baskin-tabellone-v1'; // NON rinominare: perderebbe i dati salvati degli utenti esistenti
+const APP_VERSION = '1.17.7';
+const STORE_KEY = 'tabellone-baskin-eisi-v1';
 
 /* Modalità "sola visualizzazione": attivata con ?display=1 nell'URL.
    Nasconde tutti i comandi e riceve lo stato dal controller (via SSE quando

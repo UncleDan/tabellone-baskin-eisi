@@ -39,7 +39,7 @@ Il Tabellone Baskin EISI esiste in **due repository**, che lavorano insieme:
 
 - **PWA (web)** — repo **[`tabellone-baskin-eisi`](https://github.com/UncleDan/tabellone-baskin-eisi)** *(questo)*:
   il segnapunti web di questa pagina, installabile e offline.
-- **App Android (Cast)** — repo **[`baskin-tabellone-cast`](https://github.com/UncleDan/baskin-tabellone-cast)** *(work in progress)*:
+- **App Android (Cast)** — repo **[`tabellone-baskin-cast`](https://github.com/UncleDan/tabellone-baskin-cast)** *(work in progress)*:
   incorpora questa stessa PWA e aggiunge la presentazione su TV (display
   secondario HDMI/Miracast o LAN). Questa PWA, in modalità `?display=1`, fa anche
   da **schermo via browser** per quell'app.
@@ -159,7 +159,7 @@ lettura, adatta a un secondo schermo o a un TV.
 - È disponibile anche `window.applyDisplayState(json)` per aggiornare il display
   con un push diretto (usato dal wrapper Android tramite un display secondario).
 
-Questa modalità è la base dell'app **[Tabellone Baskin Cast](https://github.com/UncleDan/baskin-tabellone-cast)**
+Questa modalità è la base dell'app **[Tabellone Baskin Cast](https://github.com/UncleDan/tabellone-baskin-cast)**
 (progetto Android separato, **work in progress**) che presenta il tabellone su un
 TV via **display secondario (HDMI/Miracast)** o via **LAN** (browser del TV).
 
@@ -305,4 +305,4 @@ Dal menu **…** dell'app è disponibile il link diretto al **repository GitHub*
 ---
 
 **Autore:** Daniele Lolli (UncleDan)  
-**Versione:** 1.17.6
+**Versione:** 1.17.7
