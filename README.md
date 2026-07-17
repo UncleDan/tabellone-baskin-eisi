@@ -1,4 +1,4 @@
-# Tabellone Baskin
+# Tabellone Baskin EISI
 
 ## Cos'è il Baskin
 
@@ -28,16 +28,16 @@ Due schermate:
 Tutto il display a 7 segmenti è disegnato in SVG: nessun font o file esterno, quindi funziona davvero offline.
 
 <p align="center">
-  <a href="https://uncledan.github.io/baskin-tabellone/pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
+  <a href="https://uncledan.github.io/tabellone-baskin-eisi/pwa/"><img src="https://img.shields.io/badge/%E2%96%B6%20Apri%20la%20PWA-2962FF?style=for-the-badge&logoColor=white" alt="Apri la PWA"></a>
 </p>
 
 ---
 
 ## Progetti collegati
 
-Il Tabellone Baskin esiste in **due repository**, che lavorano insieme:
+Il Tabellone Baskin EISI esiste in **due repository**, che lavorano insieme:
 
-- **PWA (web)** — repo **[`baskin-tabellone`](https://github.com/UncleDan/baskin-tabellone)** *(questo)*:
+- **PWA (web)** — repo **[`tabellone-baskin-eisi`](https://github.com/UncleDan/tabellone-baskin-eisi)** *(questo)*:
   il segnapunti web di questa pagina, installabile e offline.
 - **App Android (Cast)** — repo **[`baskin-tabellone-cast`](https://github.com/UncleDan/baskin-tabellone-cast)** *(work in progress)*:
   incorpora questa stessa PWA e aggiunge la presentazione su TV (display
@@ -90,10 +90,10 @@ Lo stato (punteggi, falli, timeout, tempo, nomi, impostazioni) viene salvato in 
 
 ## Pubblicazione su GitHub Pages
 
-1. Crea un repository (es. `baskin-tabellone`) e carica **tutti i file mantenendo la struttura** (README e `.gitignore` nella root, l'app nella cartella `pwa/`).
+1. Crea un repository (es. `tabellone-baskin-eisi`) e carica **tutti i file mantenendo la struttura** (README e `.gitignore` nella root, l'app nella cartella `pwa/`).
 2. Vai su **Settings → Pages**.
 3. In *Build and deployment* scegli **Deploy from a branch**, branch `main`, cartella `/ (root)`, poi **Save**.
-4. Dopo qualche minuto l'app sarà su `https://<utente>.github.io/baskin-tabellone/pwa/`.
+4. Dopo qualche minuto l'app sarà su `https://<utente>.github.io/tabellone-baskin-eisi/pwa/`.
 5. Apri il link da smartphone/tablet e usa **"Aggiungi a schermata Home" / "Installa app"**: da quel momento funziona anche senza rete.
 
 > I percorsi sono tutti relativi, quindi l'app funziona dalla cartella `pwa/` (o da qualunque altra sottocartella) senza modifiche.
@@ -113,7 +113,7 @@ python3 -m http.server 8080
 ## Struttura
 
 ```
-baskin-tabellone/
+tabellone-baskin-eisi/
 ├── README.md
 ├── .gitignore
 └── pwa/
@@ -295,9 +295,14 @@ Di conseguenza cambia anche il **significato** dei campi fuori da `config`:
 Codice rilasciato sotto licenza **MIT** (vedi [`LICENSE`](LICENSE)) — open source e
 pienamente compatibile con F-Droid. I suoni in `pwa/sounds/` sono CC0.
 
+> I loghi «EISI» e «Baskin» sono marchi registrati rispettivamente da Ente
+> Italiano Sport Inclusivi e Associazione Baskin. La licenza MIT copre il
+> codice sorgente di questo repository e non si estende ai loghi, che
+> restano di proprietà dei rispettivi titolari.
+
 Dal menu **…** dell'app è disponibile il link diretto al **repository GitHub** del codice.
 
 ---
 
 **Autore:** Daniele Lolli (UncleDan)  
-**Versione:** 1.17.5
+**Versione:** 1.17.6
